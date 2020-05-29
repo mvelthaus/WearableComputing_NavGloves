@@ -1,5 +1,8 @@
+// Motoren mit Pins 6, 9, 10 und 12 verbinden
+// Bluetooth-Modul mit TX -> RX und TX -> RX verbinden
 int pins[] = {6, 9, 10, 12};
-int VIBRATE_COUNT = 3;
+const int PINS = 4;
+const int VIBRATE_COUNT = 3;
 
 void setup()
 {
@@ -14,8 +17,27 @@ void setup()
 void loop()
 {
   // Simulation
-  activateMotor (random(4));
-  delay(1000);
+  // activateMotor (random(4));
+  // delay(1000);
+
+  if (Serial.available())
+  {
+    int input = ((int)Serial.read()) - 48;
+    handleSerialInput(input);
+  }
+}
+
+void handleSerialInput(int input)
+{
+  if (validInput(input))
+  {
+    activateMotor(input);
+  }
+  else
+  {
+    Serial.print("Invalid input=");
+    Serial.println(input);
+  }
 }
 
 void activateMotor(int motorId)
@@ -32,4 +54,16 @@ void activateMotor(int motorId)
     digitalWrite(pin, LOW);
     delay(300);
   }
+}
+
+boolean validInput(int input)
+{
+  for (int i = 0; i < PINS; i++)
+  {
+    if (input == i)
+    {
+      return true;
+    }
+  }
+  return false;
 }
