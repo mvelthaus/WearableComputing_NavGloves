@@ -62,8 +62,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         String action = intent.getAction();
         String type = intent.getType();
 
-        /* spezifisch für den Empfang von Intents aus HERE Maps -> Testen mit OpenStreetMaps, App als GEO-Handler registrieren
-        * Die Location befindet sich im Link, daher beim https splitten und den Link per Uri parsen lassen (handleIntent())
+        /* spezifisch für den Empfang von Intents aus HERE Maps und OSMand
+        * HERE Maps (work in Progress): Die Location befindet sich im Link, daher beim https splitten und den Link per Uri parsen lassen (handleIntent())
         * Aus dem String path muss dann noch latitude und logitude extrahiert werden (bisher nicht implementiert)
         */
         if (Intent.ACTION_SEND.equals(action) && type != null) {
@@ -81,10 +81,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
             outputField.setText(out);
 
-
-            //outputField.setText(handleIntent("https://"+url[1]));
             Log.i(TAG, sharedData);
-            //Log.i(TAG, url[1]);
         }
     }
 
@@ -159,13 +156,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         String path = uri.getPath();
         Set<String> args = uri.getQueryParameterNames();
 
-        Log.i("Protocol", protocol);
-        Log.i("Server", server);
-        Log.i("Path", path);
+//        Log.i("Protocol", protocol);
+//        Log.i("Server", server);
+//        Log.i("Path", path);
 
-        for(String arg: args) {
-            Log.i("Args", arg);
-        }
+//        for(String arg: args) {
+//            Log.i("Args", arg);
+//        }
         return path;
     }
 
