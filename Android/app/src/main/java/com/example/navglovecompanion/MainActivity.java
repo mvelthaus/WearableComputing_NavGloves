@@ -6,6 +6,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -21,17 +24,30 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
     private static final int LOCATION_PERMISSIONS_CHECK_CODE = 23;
+    private static final int BLUETOOTH_PERMISSION_CHECK_CODE = 24;
     private static final String TAG = "MainActivity";
 
+    // Mac-Adressen der Bluetooth Module am Lilypad
+    private final String[] macAdresses = {"00:00:00:00:01", "00:00:00:00:02"};
+
     LocationManager locationManager;
-    Location goal;
+    Location target;
     TextView outputField;
+
+    private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private BluetoothAdapter bluetoothAdapter;
+    private List<OutputStream> outputStreams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,27 +56,48 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         outputField = (TextView) findViewById(R.id.outputField);
 
+        outputStreams = new ArrayList<>();
+
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
 
-        /* spezifisch für den Empfang von Intents aus HERE Maps
+        /* spezifisch für den Empfang von Intents aus HERE Maps -> Testen mit OpenStreetMaps, App als GEO-Handler registrieren
         * Die Location befindet sich im Link, daher beim https splitten und den Link per Uri parsen lassen (handleIntent())
         * Aus dem String path muss dann noch latitude und logitude extrahiert werden (bisher nicht implementiert)
         */
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             String sharedData = intent.getStringExtra(Intent.EXTRA_TEXT);
-            String[] url = sharedData.split("https://");
+            Log.i(TAG, sharedData);
+            String out = "";
+            if(sharedData.contains("geo:")){
+                target = handleOSMLinks(sharedData);
+                out = target.toString();
+            }else if(sharedData.contains("https://")){
+                out = handleHERELinks(sharedData);
+            }else{
+                out = "Invalid Data. Use HERE Maps or OSMand for location.";
+            }
 
-            outputField.setText(handleIntent("https://"+url[1]));
-            //Log.i(TAG, sharedData);
+            outputField.setText(out);
+
+
+            //outputField.setText(handleIntent("https://"+url[1]));
+            Log.i(TAG, sharedData);
             //Log.i(TAG, url[1]);
         }
     }
 
     @Override
-    protected void onResume() {
+    protected void onStart() {
         super.onStart();
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH}, BLUETOOTH_PERMISSION_CHECK_CODE);
+        }
+        else {
+            startBluetoothConnection();
+        }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSIONS_CHECK_CODE);
@@ -77,6 +114,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 startLocation();
             } else {
                 Toast.makeText(this, "Location permissions are required to track your position.", Toast.LENGTH_LONG).show();
+            }
+        }
+
+        if (requestCode == BLUETOOTH_PERMISSION_CHECK_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startBluetoothConnection();
+            } else {
+                Toast.makeText(this, "Bluetooth permissions are required.", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -105,8 +150,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // Nothing more to do here
     }
 
-    private String handleIntent(String data) {
+    private String handleHERELinks(String data) {
         // TODO Save `goal`
+        data = data.split("https://")[1];
         Uri uri = Uri.parse(data);
         String protocol = uri.getScheme();
         String server = uri.getAuthority();
@@ -121,6 +167,45 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             Log.i("Args", arg);
         }
         return path;
+    }
+
+    private Location handleOSMLinks(String data){
+        String[] locationStrings = data.split("geo:")[1].split("\\?z=")[0].split(",");
+        Double latitude = Double.parseDouble(locationStrings[0]);
+        Double longitude = Double.parseDouble(locationStrings[1]);
+        Location location = new Location("TargetLocation");
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+        return location;
+    }
+
+    private void startBluetoothConnection(){
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter != null) {
+            for (String macAddress : macAdresses) {
+                try {
+                    BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
+                    BluetoothSocket bluetoothSocket = bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid);
+                    outputStreams.add(bluetoothSocket.getOutputStream());
+                    Log.i(TAG, "Connected to: " + macAddress);
+                } catch (Exception e) {
+                    Log.e(TAG, "Bluetooth connection error: " + e);
+                    Toast.makeText(this, "Connection error with MAC address: "+macAddress, Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+    private void activateMotor(int hand, int motor){
+        String msg = Integer.toString(motor);
+        byte[] buffer = msg.getBytes();
+        try {
+            outputStreams.get(hand).write(buffer);
+            Log.i(TAG, "Activated motor "+motor+" on hand "+hand);
+        }catch (Exception e){
+            Log.e(TAG, "Bluetooth sending error: "+e);
+        }
+
     }
 
     private void startLocation() {
