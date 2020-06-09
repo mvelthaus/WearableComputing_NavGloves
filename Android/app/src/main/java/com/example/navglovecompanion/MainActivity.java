@@ -55,121 +55,91 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private boolean stateBtn = false;
     private String out;
 
-
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private BluetoothAdapter bluetoothAdapter;
     private List<OutputStream> outputStreams;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-       // outputField = (TextView) findViewById(R.id.outputField);
+        // outputField = (TextView) findViewById(R.id.outputField);
         input = findViewById(R.id.input);
         displayBearing = (TextView) findViewById(R.id.displayBearing);
         displayDis = (TextView) findViewById(R.id.displayDis);
 
-        naviBtn=findViewById(R.id.naviBtn);
+        naviBtn = findViewById(R.id.naviBtn);
         naviBtn.setOnClickListener(this);
-        locationManager=(LocationManager)getSystemService(LOCATION_SERVICE) ;
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         outputStreams = new ArrayList<>();
-
-
 
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
 
         /* spezifisch für den Empfang von Intents aus HERE Maps und OSMand
-        * HERE Maps (work in Progress): Die Location befindet sich im Link, daher beim https splitten und den Link per Uri parsen lassen (handleIntent())
-        * Aus dem String path muss dann noch latitude und logitude extrahiert werden (bisher nicht implementiert)
-        */
+         * HERE Maps (work in Progress): Die Location befindet sich im Link, daher beim https splitten und den Link per Uri parsen lassen (handleIntent())
+         * Aus dem String path muss dann noch latitude und logitude extrahiert werden (bisher nicht implementiert)
+         */
 
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             String sharedData = intent.getStringExtra(Intent.EXTRA_TEXT);
             Log.i(TAG, sharedData);
             String out = "";
-            if(sharedData.contains("geo:")){
+            if (sharedData.contains("geo:")) {
                 target = handleOSMLinks(sharedData);
                 out = target.toString();
                 isTarget = true;
 
-            }
-
-           else if(sharedData.contains("https://")){
+            } else if (sharedData.contains("https://")) {
                 out = handleHERELinks(sharedData);
-               isTarget = true;
+                isTarget = true;
 
-            }else{
+            } else {
                 out = "Invalid Data. Use HERE Maps or OSMand for location.";
                 isTarget = false;
             }
-
-           // outputField.setText(out);
+            // outputField.setText(out);
             input.setText(out);
-
-           // Log.i(TAG, sharedData);
-
-
+            // Log.i(TAG, sharedData);
         }
-     }
-
+    }
 
     @Override
     public void onClick(View v) {
-       if (isTarget){
-        startTracking();
-            }
-      else{
-      Toast.makeText(this, "No target position exists!", Toast.LENGTH_LONG).show();
-
-      }
+        if (isTarget) {
+            startTracking();
+        } else {
+            Toast.makeText(this, "No target position exists!", Toast.LENGTH_LONG).show();
+        }
     }
 
-
-    private void startTracking(){
-
-        if(stateBtn==true)
-        {
+    private void startTracking() {
+        if (stateBtn == true) {
             input.setEnabled(true);
             naviBtn.setText("Navigate to Position");
             displayDis.setText("");
             displayBearing.setText("");
-            target=null;
-            // stop checkDistance
-            // stop ckeckDirection
-
+            target = null;
+        } else {
+            stateBtn = true;
         }
-         else {
-             stateBtn=true;
-         }
     }
 
+    private void setInfo(Location location) {
 
-    private void setInfo(Location location){
+        if (stateBtn == true) {
+            input.setEnabled(false);
+            naviBtn.setText("Stop Navigation");
+            stateBtn = false;
+            float distance = location.distanceTo(target);
+            float bearing = location.bearingTo(target);
 
-        if (stateBtn==true) {
-
-           //if(lastLocation!=null) {
-              //Location test = new Location("TargetLocation");
-              // test.setLatitude(LAT);
-              // test.setLongitude(LONG);
-           input.setEnabled(false);
-           naviBtn.setText("Stop Navigation");
-           stateBtn = false;
-           float distance = location.distanceTo(target);
-           float bearing = location.bearingTo(target);
-
-           displayDis.setText(String.format("%.2f", distance));
-           displayBearing.setText(String.format("%.2f", bearing));
-           //lastLocation = location;
-           //}
+            displayDis.setText(String.format("%.2f", distance));
+            displayBearing.setText(String.format("%.2f", bearing));
         }
-     }
-
+    }
 
     @Override
     protected void onStart() {
@@ -177,15 +147,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH}, BLUETOOTH_PERMISSION_CHECK_CODE);
-        }
-        else {
+        } else {
             startBluetoothConnection();
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSIONS_CHECK_CODE);
-        }
-        else {
+        } else {
             startLocation();
         }
     }
@@ -212,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, location.toString());
-       // checkBearing(location);
         setInfo(location);
     }
 
@@ -247,7 +214,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         String server = uri.getAuthority();
         String path = uri.getPath();
         Set<String> args = uri.getQueryParameterNames();
-
 //        Log.i("Protocol", protocol);
 //        Log.i("Server", server);
 //        Log.i("Path", path);
@@ -258,9 +224,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         return path;
     }
 
-
-
-    private Location handleOSMLinks(String data){
+    private Location handleOSMLinks(String data) {
         String[] locationStrings = data.split("geo:")[1].split("\\?z=")[0].split(",");
         Double latitude = Double.parseDouble(locationStrings[0]);
         Double longitude = Double.parseDouble(locationStrings[1]);
@@ -270,10 +234,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         return location;
     }
 
-
-    private void startBluetoothConnection(){
+    private void startBluetoothConnection() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if(bluetoothAdapter != null) {
+        if (bluetoothAdapter != null) {
             for (String macAddress : macAdresses) {
                 try {
                     BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
@@ -282,20 +245,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     Log.i(TAG, "Connected to: " + macAddress);
                 } catch (Exception e) {
                     Log.e(TAG, "Bluetooth connection error: " + e);
-                    Toast.makeText(this, "Connection error with MAC address: "+macAddress, Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Connection error with MAC address: " + macAddress, Toast.LENGTH_LONG).show();
                 }
             }
         }
     }
 
-    private void activateMotor(int hand, int motor){
+    private void activateMotor(int hand, int motor) {
         String msg = Integer.toString(motor);
         byte[] buffer = msg.getBytes();
         try {
             outputStreams.get(hand).write(buffer);
-            Log.i(TAG, "Activated motor "+motor+" on hand "+hand);
-        }catch (Exception e){
-            Log.e(TAG, "Bluetooth sending error: "+e);
+            Log.i(TAG, "Activated motor " + motor + " on hand " + hand);
+        } catch (Exception e) {
+            Log.e(TAG, "Bluetooth sending error: " + e);
         }
 
     }
@@ -320,12 +283,4 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
 
     }
-
-   // private void checkBearing(Location location) {
-        // TODO Calculate bearing from `location` and `goal`
-        //      Compare with `location.bearing`
-        //      Start vibration if necessary
-    //}
-
-
 }
