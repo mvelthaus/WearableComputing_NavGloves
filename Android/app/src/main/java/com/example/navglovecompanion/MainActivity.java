@@ -1,10 +1,5 @@
 package com.example.navglovecompanion;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -23,6 +18,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -218,20 +218,24 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.i(TAG, "Status changed: " + provider);
+        Log.d(TAG, "Status changed: " + provider);
         // Nothing more to do here
     }
 
     @Override
     public void onProviderEnabled(String provider) {
-        Log.i(TAG, "Provider enabled: " + provider);
-        // Nothing more to do here
+        Log.d(TAG, "Provider enabled: " + provider);
+        if (provider.equals(LocationManager.GPS_PROVIDER)) {
+            Toast.makeText(this, "GPS has been enabled, tracking resumed.", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-        Log.i(TAG, "Provider disabled: " + provider);
-        // Nothing more to do here
+        Log.d(TAG, "Provider disabled: " + provider);
+        if (provider.equals(LocationManager.GPS_PROVIDER)) {
+            Toast.makeText(this, "GPS has been disabled, tracking paused.", Toast.LENGTH_LONG).show();
+        }
     }
 
 
@@ -297,19 +301,25 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     private void startLocation() {
-
-        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-            if(ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,1000,0,this);
-            else{
-                Toast.makeText(this,"No permission for GPS",Toast.LENGTH_SHORT).show();
+        try {
+            locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            if (locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                Location lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if (lastLocation != null) {
+                    onLocationChanged(lastLocation);
+                } else {
+                    Log.d(TAG, "No last known position");
+                }
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1, this);
+                Log.d(TAG, "Location init successful");
+            } else {
+                Toast.makeText(this, "GPS has to be enabled to track your position.", Toast.LENGTH_LONG).show();
             }
-        }else{
-            Toast.makeText(this, "Provider not enabled", Toast.LENGTH_SHORT).show();
+        } catch (SecurityException e) {
+            Toast.makeText(this, "Location permissions are required to track your position.", Toast.LENGTH_LONG).show();
         }
+
     }
-
-
 
    // private void checkBearing(Location location) {
         // TODO Calculate bearing from `location` and `goal`
