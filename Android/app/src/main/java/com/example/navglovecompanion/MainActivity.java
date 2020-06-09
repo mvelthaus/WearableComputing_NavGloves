@@ -12,28 +12,25 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.icu.util.ULocale;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import java.io.OutputStream;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
-public class MainActivity extends AppCompatActivity implements LocationListener {
+public class MainActivity extends AppCompatActivity implements LocationListener, View.OnClickListener {
     private static final int LOCATION_PERMISSIONS_CHECK_CODE = 23;
     private static final int BLUETOOTH_PERMISSION_CHECK_CODE = 24;
     private static final String TAG = "MainActivity";
@@ -42,21 +39,45 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private final String[] macAdresses = {"00:00:00:00:01", "00:00:00:00:02"};
 
     LocationManager locationManager;
+    Location lastLocation;
     Location target;
     TextView outputField;
+
+    Location location;
+    // Location test;
+    //private final double LONG =9.442749;
+    //private final double LAT= 54.778514;
+    private Button naviBtn;
+    private EditText input;
+    private TextView displayBearing;
+    private TextView displayDis;
+    private boolean isTarget = false;
+    private boolean stateBtn = false;
+    private String out;
+
 
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private BluetoothAdapter bluetoothAdapter;
     private List<OutputStream> outputStreams;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        outputField = (TextView) findViewById(R.id.outputField);
+       // outputField = (TextView) findViewById(R.id.outputField);
+        input = findViewById(R.id.input);
+        displayBearing = (TextView) findViewById(R.id.displayBearing);
+        displayDis = (TextView) findViewById(R.id.displayDis);
 
+        naviBtn=findViewById(R.id.naviBtn);
+        naviBtn.setOnClickListener(this);
+        locationManager=(LocationManager)getSystemService(LOCATION_SERVICE) ;
         outputStreams = new ArrayList<>();
+
+
 
         Intent intent = getIntent();
         String action = intent.getAction();
@@ -66,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         * HERE Maps (work in Progress): Die Location befindet sich im Link, daher beim https splitten und den Link per Uri parsen lassen (handleIntent())
         * Aus dem String path muss dann noch latitude und logitude extrahiert werden (bisher nicht implementiert)
         */
+
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             String sharedData = intent.getStringExtra(Intent.EXTRA_TEXT);
             Log.i(TAG, sharedData);
@@ -73,17 +95,81 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             if(sharedData.contains("geo:")){
                 target = handleOSMLinks(sharedData);
                 out = target.toString();
-            }else if(sharedData.contains("https://")){
-                out = handleHERELinks(sharedData);
-            }else{
-                out = "Invalid Data. Use HERE Maps or OSMand for location.";
+                isTarget = true;
+
             }
 
-            outputField.setText(out);
+           else if(sharedData.contains("https://")){
+                out = handleHERELinks(sharedData);
+               isTarget = true;
 
-            Log.i(TAG, sharedData);
+            }else{
+                out = "Invalid Data. Use HERE Maps or OSMand for location.";
+                isTarget = false;
+            }
+
+           // outputField.setText(out);
+            input.setText(out);
+
+           // Log.i(TAG, sharedData);
+
+
         }
+     }
+
+
+    @Override
+    public void onClick(View v) {
+       if (isTarget){
+        startTracking();
+            }
+      else{
+      Toast.makeText(this, "No target position exists!", Toast.LENGTH_LONG).show();
+
+      }
     }
+
+
+    private void startTracking(){
+
+        if(stateBtn==true)
+        {
+            input.setEnabled(true);
+            naviBtn.setText("Navigate to Position");
+            displayDis.setText("");
+            displayBearing.setText("");
+            target=null;
+            // stop checkDistance
+            // stop ckeckDirection
+
+        }
+         else {
+             stateBtn=true;
+         }
+    }
+
+
+    private void setInfo(Location location){
+
+        if (stateBtn==true) {
+
+           //if(lastLocation!=null) {
+              //Location test = new Location("TargetLocation");
+              // test.setLatitude(LAT);
+              // test.setLongitude(LONG);
+           input.setEnabled(false);
+           naviBtn.setText("Stop Navigation");
+           stateBtn = false;
+           float distance = location.distanceTo(target);
+           float bearing = location.bearingTo(target);
+
+           displayDis.setText(String.format("%.2f", distance));
+           displayBearing.setText(String.format("%.2f", bearing));
+           //lastLocation = location;
+           //}
+        }
+     }
+
 
     @Override
     protected void onStart() {
@@ -126,7 +212,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, location.toString());
-        checkBearing(location);
+       // checkBearing(location);
+        setInfo(location);
     }
 
     @Override
@@ -147,6 +234,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // Nothing more to do here
     }
 
+
     private String handleHERELinks(String data) {
         // TODO Save `goal`
         data = data.split("https://")[1];
@@ -166,6 +254,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         return path;
     }
 
+
+
     private Location handleOSMLinks(String data){
         String[] locationStrings = data.split("geo:")[1].split("\\?z=")[0].split(",");
         Double latitude = Double.parseDouble(locationStrings[0]);
@@ -175,6 +265,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         location.setLongitude(longitude);
         return location;
     }
+
 
     private void startBluetoothConnection(){
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -206,31 +297,25 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     private void startLocation() {
-        try {
-            locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-            if (locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                Location lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                if (lastLocation != null) {
-                    onLocationChanged(lastLocation);
-                }
-                else {
-                    Log.d(TAG, "No last known position");
-                }
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1, this);
-                Log.d(TAG, "Location init successful");
+
+        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            if(ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,1000,0,this);
+            else{
+                Toast.makeText(this,"No permission for GPS",Toast.LENGTH_SHORT).show();
             }
-            else {
-                Toast.makeText(this, "Location provider is not enabled.", Toast.LENGTH_LONG).show();
-            }
-        }
-        catch (SecurityException e) {
-            Toast.makeText(this, "Location permissions are required to track your position.", Toast.LENGTH_LONG).show();
+        }else{
+            Toast.makeText(this, "Provider not enabled", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void checkBearing(Location location) {
+
+
+   // private void checkBearing(Location location) {
         // TODO Calculate bearing from `location` and `goal`
         //      Compare with `location.bearing`
         //      Start vibration if necessary
-    }
+    //}
+
+
 }
