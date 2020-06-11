@@ -1,0 +1,5 @@
+{
+    "port": "/dev/tty.usbmodem143101",
+    "board": "arduino:avr:LilyPadUSB",
+    "sketch": "Main.ino"
+}

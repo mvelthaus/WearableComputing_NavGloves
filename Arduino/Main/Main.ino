@@ -1,12 +1,19 @@
+#include <SoftwareSerial.h>
 // Motoren mit Pins 6, 9, 10 und 12 verbinden
 // Bluetooth-Modul mit TX -> RX und TX -> RX verbinden
 int pins[] = {6, 9, 10, 12};
 const int PINS = 4;
 const int VIBRATE_COUNT = 3;
 
+const int RX_PIN = 0;
+const int TX_PIN = 1;
+
+SoftwareSerial bluetooth(RX_PIN, TX_PIN);
+
 void setup()
 {
   Serial.begin(9600);
+  bluetooth.begin(9600);
 
   for (int i = 0; i < 4; i++)
   {
@@ -19,6 +26,11 @@ void loop()
   // Simulation
   // activateMotor (random(4));
   // delay(1000);
+
+  // if (bluetooth.available()) {
+  //   int input = ((int)bluetooth.read()) - 48;
+  //   handleSerialInput(input);
+  // }
 
   if (Serial.available())
   {
