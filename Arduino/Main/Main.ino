@@ -8,14 +8,16 @@ const int VIBRATE_COUNT = 3;
 const int RX_PIN = 0;
 const int TX_PIN = 1;
 
-SoftwareSerial bluetooth(RX_PIN, TX_PIN);
+//SoftwareSerial blueSerial(RX_PIN, TX_PIN);
+const int BAUD_RATE = 9600;
 
 void setup()
 {
-  Serial.begin(9600);
-  bluetooth.begin(9600);
+  Serial.begin(BAUD_RATE);
+  Serial1.begin(BAUD_RATE);
+  //blueSerial.begin(BAUD_RATE);
 
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < PINS; i++)
   {
     pinMode(pins[i], OUTPUT);
   }
@@ -27,16 +29,24 @@ void loop()
   // activateMotor (random(4));
   // delay(1000);
 
-  // if (bluetooth.available()) {
-  //   int input = ((int)bluetooth.read()) - 48;
+  if (Serial1.available()) {
+    int inChar = Serial1.read();
+    //Serial.println(inChar);
+    String inString = ""; 
+    inString += (char) inChar;
+
+    int intInput = inString.toInt();
+    // Serial.print("Input=");
+    // Serial.println(intInput);
+    handleSerialInput(intInput);
+  }
+
+  // if (Serial.available())
+  // {
+  //   Serial.println(Serial.read());
+  //   int input = ((int)Serial.read()) - 48;
   //   handleSerialInput(input);
   // }
-
-  if (Serial.available())
-  {
-    int input = ((int)Serial.read()) - 48;
-    handleSerialInput(input);
-  }
 }
 
 void handleSerialInput(int input)

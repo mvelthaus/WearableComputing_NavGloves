@@ -1,6 +1,6 @@
 {
     "programmer": "AVR ISP",
     "board": "arduino:avr:LilyPadUSB",
-    "sketch": "Main.ino",
+    "sketch": "Main\\Main.ino",
     "port": "COM6"
 }
