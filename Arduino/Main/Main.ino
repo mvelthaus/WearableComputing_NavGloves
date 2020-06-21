@@ -41,12 +41,19 @@ void loop()
     handleSerialInput(intInput);
   }
 
-  // if (Serial.available())
-  // {
-  //   Serial.println(Serial.read());
-  //   int input = ((int)Serial.read()) - 48;
-  //   handleSerialInput(input);
-  // }
+  if (Serial.available())
+  {
+    int inChar = Serial.read();
+    //Serial.println(inChar);
+    String inString = ""; 
+    inString += (char) inChar;
+
+    int intInput = inString.toInt();
+    // Serial.print("Input=");
+    // Serial.println(intInput);
+    Serial.println(Serial.read());
+    handleSerialInput(intInput);
+  }
 }
 
 void handleSerialInput(int input)
@@ -66,6 +73,9 @@ void activateMotor(int motorId)
 {
   Serial.print("Activate Motor: ");
   Serial.println(motorId);
+
+  Serial1.print("Activate Motor: ");
+  Serial1.println(motorId);
 
   int pin = pins[motorId];
 
