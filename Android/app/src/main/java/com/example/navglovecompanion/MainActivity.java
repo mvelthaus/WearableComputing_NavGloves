@@ -56,7 +56,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private String out;
 
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    private BluetoothAdapter bluetoothAdapter;
     private List<OutputStream> outputStreams;
 
     // lifecycle methods
@@ -87,24 +86,29 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             String sharedData = intent.getStringExtra(Intent.EXTRA_TEXT);
-            Log.i(TAG, sharedData);
-            String out = "";
-            if (sharedData.contains("geo:")) {
-                target = handleOSMLinks(sharedData);
-                out = target.toString();
-                isTarget = true;
+            if (sharedData != null) {
+                Log.d(TAG, "Shared data: " + sharedData);
+                String out = "";
+                if (sharedData.contains("geo:")) {
+                    target = handleOSMLinks(sharedData);
+                    out = target.toString();
+                    isTarget = true;
 
-            } else if (sharedData.contains("https://")) {
-                out = handleHERELinks(sharedData);
-                isTarget = true;
+                } else if (sharedData.contains("https://")) {
+                    out = handleHERELinks(sharedData);
+                    isTarget = true;
 
-            } else {
-                out = "Invalid Data. Use HERE Maps or OSMand for location.";
-                isTarget = false;
+                } else {
+                    out = "Invalid Data. Use HERE Maps or OSMand for location.";
+                    isTarget = false;
+                }
+                // outputField.setText(out);
+                input.setText(out);
+                // Log.i(TAG, sharedData);
             }
-            // outputField.setText(out);
-            input.setText(out);
-            // Log.i(TAG, sharedData);
+            else {
+                Log.d(TAG, "No shared data");
+            }
         }
     }
 
@@ -206,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     private void startTracking() {
-        if (stateBtn == true) {
+        if (stateBtn) {
             input.setEnabled(true);
             naviBtn.setText("Navigate to Position");
             displayDis.setText("");
@@ -218,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     private void setInfo(Location location) {
-        if (stateBtn == true) {
+        if (stateBtn) {
             input.setEnabled(false);
             naviBtn.setText("Stop Navigation");
             stateBtn = false;
@@ -252,8 +256,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     private Location handleOSMLinks(String data) {
         String[] locationStrings = data.split("geo:")[1].split("\\?z=")[0].split(",");
-        Double latitude = Double.parseDouble(locationStrings[0]);
-        Double longitude = Double.parseDouble(locationStrings[1]);
+        double latitude = Double.parseDouble(locationStrings[0]);
+        double longitude = Double.parseDouble(locationStrings[1]);
         Location location = new Location("TargetLocation");
         location.setLatitude(latitude);
         location.setLongitude(longitude);
@@ -263,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     // bluetooth methods
 
     private void startBluetoothConnection() {
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter != null) {
             for (String macAddress : macAdresses) {
                 try {
