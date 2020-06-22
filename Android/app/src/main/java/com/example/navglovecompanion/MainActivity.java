@@ -59,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private BluetoothAdapter bluetoothAdapter;
     private List<OutputStream> outputStreams;
 
+    // lifecycle methods
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,41 +109,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     @Override
-    public void onClick(View v) {
-        if (isTarget) {
-            startTracking();
-        } else {
-            Toast.makeText(this, "No target position exists!", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void startTracking() {
-        if (stateBtn == true) {
-            input.setEnabled(true);
-            naviBtn.setText("Navigate to Position");
-            displayDis.setText("");
-            displayBearing.setText("");
-            target = null;
-        } else {
-            stateBtn = true;
-        }
-    }
-
-    private void setInfo(Location location) {
-
-        if (stateBtn == true) {
-            input.setEnabled(false);
-            naviBtn.setText("Stop Navigation");
-            stateBtn = false;
-            float distance = location.distanceTo(target);
-            float bearing = location.bearingTo(target);
-
-            displayDis.setText(String.format("%.2f", distance));
-            displayBearing.setText(String.format("%.2f", bearing));
-        }
-    }
-
-    @Override
     protected void onStart() {
         super.onStart();
 
@@ -157,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             startLocation();
         }
     }
+
+    // event methods
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -205,6 +174,63 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
     }
 
+    @Override
+    public void onClick(View v) {
+        if (isTarget) {
+            startTracking();
+        } else {
+            Toast.makeText(this, "No target position exists!", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // location methods
+
+    private void startLocation() {
+        try {
+            locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            if (locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                Location lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if (lastLocation != null) {
+                    onLocationChanged(lastLocation);
+                } else {
+                    Log.d(TAG, "No last known position");
+                }
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1, this);
+                Log.d(TAG, "Location init successful");
+            } else {
+                Toast.makeText(this, "GPS has to be enabled to track your position.", Toast.LENGTH_LONG).show();
+            }
+        } catch (SecurityException e) {
+            Toast.makeText(this, "Location permissions are required to track your position.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void startTracking() {
+        if (stateBtn == true) {
+            input.setEnabled(true);
+            naviBtn.setText("Navigate to Position");
+            displayDis.setText("");
+            displayBearing.setText("");
+            target = null;
+        } else {
+            stateBtn = true;
+        }
+    }
+
+    private void setInfo(Location location) {
+        if (stateBtn == true) {
+            input.setEnabled(false);
+            naviBtn.setText("Stop Navigation");
+            stateBtn = false;
+            float distance = location.distanceTo(target);
+            float bearing = location.bearingTo(target);
+
+            displayDis.setText(String.format("%.2f", distance));
+            displayBearing.setText(String.format("%.2f", bearing));
+        }
+    }
+
+    // link handling methods
 
     private String handleHERELinks(String data) {
         // TODO Save `goal`
@@ -234,6 +260,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         return location;
     }
 
+    // bluetooth methods
+
     private void startBluetoothConnection() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter != null) {
@@ -260,27 +288,5 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         } catch (Exception e) {
             Log.e(TAG, "Bluetooth sending error: " + e);
         }
-
-    }
-
-    private void startLocation() {
-        try {
-            locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-            if (locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                Location lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                if (lastLocation != null) {
-                    onLocationChanged(lastLocation);
-                } else {
-                    Log.d(TAG, "No last known position");
-                }
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1, this);
-                Log.d(TAG, "Location init successful");
-            } else {
-                Toast.makeText(this, "GPS has to be enabled to track your position.", Toast.LENGTH_LONG).show();
-            }
-        } catch (SecurityException e) {
-            Toast.makeText(this, "Location permissions are required to track your position.", Toast.LENGTH_LONG).show();
-        }
-
     }
 }
