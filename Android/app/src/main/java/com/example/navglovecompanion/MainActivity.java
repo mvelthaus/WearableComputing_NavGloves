@@ -39,10 +39,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private static final String[] MAC_ADDRESSES = {"00:00:00:00:01", "00:00:00:00:02"};
     private static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    // Location zum Testen
-    //private static final double LONG = 9.442749;
-    //private static final double LAT = 54.778514;
-
     private LocationManager locationManager;
     private Location target;
     private boolean doNavigation = false;
@@ -77,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             String sharedData = intent.getStringExtra(Intent.EXTRA_TEXT);
             inputView.setText(sharedData);
         }
+        // Activate for debugging
+        inputView.setText("54.7748494252, 9.45598784558");
     }
 
     @Override
@@ -119,8 +117,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d(TAG, location.toString());
-        setInfo(location);
+        if (doNavigation) {
+            //Log.v(TAG, location.toString());
+            setInfo(location);
+        }
     }
 
     @Override
@@ -192,12 +192,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     private void setInfo(Location location) {
-        if (doNavigation) {
-            float distance = location.distanceTo(target);
-            float bearing = location.bearingTo(target);
-            distanceView.setText(String.format("%.2f", distance));
-            bearingView.setText(String.format("%.2f", bearing));
-        }
+        float distance = location.distanceTo(target);
+        float bearing = location.bearingTo(target);
+        distanceView.setText(String.format("%.2f", distance));
+        bearingView.setText(String.format("%.2f", bearing));
+        notifyWearer(bearing, distance);
     }
 
     private Location parseLocationString(String locationStr) {
@@ -237,12 +236,47 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
     }
 
+    private void notifyWearer(float distance, float bearing) {
+        if (distance < 5) {
+            for (int motor = 0; motor < 4; motor++) {
+                activateMotor(0, motor);
+                activateMotor(1, motor);
+            }
+        }
+        else {
+            int hand = bearing >= 0 ? 0 : 1;
+            float absoluteBearing = Math.abs(bearing);
+            if (absoluteBearing > 5.0) {
+                activateMotor(hand, 0);
+            }
+            else if (absoluteBearing > 10.0) {
+                activateMotor(hand, 1);
+            }
+            else if (absoluteBearing > 20.0) {
+                activateMotor(hand, 2);
+            }
+            else if (absoluteBearing > 40.0) {
+                activateMotor(hand, 3);
+            }
+            else if (absoluteBearing > 60.0) {
+                activateMotor(hand, 2);
+                activateMotor(hand, 3);
+            }
+            else if (absoluteBearing > 80.0) {
+                activateMotor(hand, 0);
+                activateMotor(hand, 1);
+                activateMotor(hand, 2);
+                activateMotor(hand, 3);
+            }
+        }
+    }
+
     private void activateMotor(int hand, int motor) {
         String msg = Integer.toString(motor);
         byte[] buffer = msg.getBytes();
         try {
+            Log.d(TAG, "Activating motor " + motor + " on hand " + hand);
             outputStreams.get(hand).write(buffer);
-            Log.i(TAG, "Activated motor " + motor + " on hand " + hand);
         } catch (Exception e) {
             Log.e(TAG, "Bluetooth sending error: " + e);
         }
