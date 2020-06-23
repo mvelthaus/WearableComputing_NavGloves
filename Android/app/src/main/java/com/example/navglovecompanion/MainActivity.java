@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             inputView.setText(sharedData);
         }
         // Activate for debugging
-        inputView.setText("54.7748494252, 9.45598784558");
+        inputView.setText("54.7748757451, 9.45588403779");
     }
 
     @Override
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 inputView.setEnabled(false);
                 naviBtn.setText("Stop Navigation");
                 distanceView.setText("Start moving...");
-                bearingView.setText("");
+                bearingView.setText("---");
             }
             else {
                 Toast.makeText(this, "The entered text does not describe a valid position", Toast.LENGTH_LONG).show();
@@ -198,18 +198,25 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         if (previousLocation == null) {
             previousLocation = location;
         }
-        else if (location.distanceTo(previousLocation) > 5.0) {
-            float distance = location.distanceTo(target);
-            float bearingTarget = location.bearingTo(target);
-            float bearingPrevious = previousLocation.bearingTo(location);
-            float bearingDelta = bearingTarget - bearingPrevious;
-            previousLocation = location;
-            Log.v(TAG, "Bearing to target: " + bearingTarget);
-            Log.v(TAG, "Bearing from previous: " + bearingPrevious);
-            Log.v(TAG, "Bearing delta: " + bearingDelta);
+        float distance = location.distanceTo(target);
+        if (distance < 5.0) {
+            distanceView.setText("Target reached.");
+            bearingView.setText("---");
+            notifyTargetReached();
+        }
+        else {
             distanceView.setText(String.format("Distance: %.2f", distance));
-            bearingView.setText(String.format("Bearing: %.2f", bearingDelta));
-            notifyWearer(bearingDelta, distance);
+            if (previousLocation != null && location.distanceTo(previousLocation) > 5.0) {
+                float bearingTarget = location.bearingTo(target);
+                float bearingPrevious = previousLocation.bearingTo(location);
+                float bearingDelta = bearingTarget - bearingPrevious;
+                previousLocation = location;
+                Log.v(TAG, "Bearing to target: " + bearingTarget);
+                Log.v(TAG, "Bearing from previous: " + bearingPrevious);
+                Log.v(TAG, "Bearing delta: " + bearingDelta);
+                bearingView.setText(String.format("Bearing: %.2f", bearingDelta));
+                notifyDelta(bearingDelta);
+            }
         }
     }
 
@@ -250,38 +257,37 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
     }
 
-    private void notifyWearer(float distance, float delta) {
-        if (distance < 5) {
-            for (int motor = 0; motor < 4; motor++) {
-                activateMotor(0, motor);
-                activateMotor(1, motor);
-            }
+    private void notifyTargetReached() {
+        for (int motor = 0; motor < 4; motor++) {
+            activateMotor(0, motor);
+            activateMotor(1, motor);
         }
-        else {
-            int hand = delta >= 0 ? 0 : 1;
-            float absoluteDelta = Math.abs(delta);
-            if (absoluteDelta > 5.0) {
-                activateMotor(hand, 0);
-            }
-            else if (absoluteDelta > 10.0) {
-                activateMotor(hand, 1);
-            }
-            else if (absoluteDelta > 20.0) {
-                activateMotor(hand, 2);
-            }
-            else if (absoluteDelta > 40.0) {
-                activateMotor(hand, 3);
-            }
-            else if (absoluteDelta > 60.0) {
-                activateMotor(hand, 2);
-                activateMotor(hand, 3);
-            }
-            else if (absoluteDelta > 80.0) {
-                activateMotor(hand, 0);
-                activateMotor(hand, 1);
-                activateMotor(hand, 2);
-                activateMotor(hand, 3);
-            }
+    }
+
+    private void notifyDelta(float delta) {
+        int hand = delta >= 0 ? 0 : 1;
+        float absoluteDelta = Math.abs(delta);
+        if (absoluteDelta > 5.0) {
+            activateMotor(hand, 0);
+        }
+        else if (absoluteDelta > 10.0) {
+            activateMotor(hand, 1);
+        }
+        else if (absoluteDelta > 20.0) {
+            activateMotor(hand, 2);
+        }
+        else if (absoluteDelta > 40.0) {
+            activateMotor(hand, 3);
+        }
+        else if (absoluteDelta > 60.0) {
+            activateMotor(hand, 2);
+            activateMotor(hand, 3);
+        }
+        else if (absoluteDelta > 80.0) {
+            activateMotor(hand, 0);
+            activateMotor(hand, 1);
+            activateMotor(hand, 2);
+            activateMotor(hand, 3);
         }
     }
 
