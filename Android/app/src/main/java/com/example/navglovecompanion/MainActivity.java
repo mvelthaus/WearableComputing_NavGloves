@@ -147,12 +147,25 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onClick(View v) {
-        target = parseLocationString(inputView.getText().toString());
-        if (target != null) {
-            startTracking();
-        }
-        else {
-            Toast.makeText(this, "The entered text does not describe a valid position", Toast.LENGTH_LONG).show();
+        if (doNavigation) {
+            target = null;
+            doNavigation = false;
+            inputView.setEnabled(true);
+            naviBtn.setText("Start Navigation");
+            distanceView.setText("");
+            bearingView.setText("");
+        } else {
+            target = parseLocationString(inputView.getText().toString());
+            if (target != null) {
+                doNavigation = true;
+                inputView.setEnabled(false);
+                naviBtn.setText("Stop Navigation");
+                distanceView.setText("Waiting for");
+                bearingView.setText("location update...");
+            }
+            else {
+                Toast.makeText(this, "The entered text does not describe a valid position", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -178,33 +191,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
     }
 
-    private void startTracking() {
-        if (doNavigation) {
-            inputView.setEnabled(true);
-            naviBtn.setText("Navigate to Position");
-            distanceView.setText("");
-            bearingView.setText("");
-            target = null;
-        } else {
-            doNavigation = true;
-        }
-    }
-
     private void setInfo(Location location) {
         if (doNavigation) {
-            inputView.setEnabled(false);
-            naviBtn.setText("Stop Navigation");
-            doNavigation = false;
             float distance = location.distanceTo(target);
             float bearing = location.bearingTo(target);
-
             distanceView.setText(String.format("%.2f", distance));
             bearingView.setText(String.format("%.2f", bearing));
         }
-    }
-
-    private String convertLocationToString(Location location) {
-        return location.getLatitude() + ", " + location.getLongitude();
     }
 
     private Location parseLocationString(String locationStr) {
