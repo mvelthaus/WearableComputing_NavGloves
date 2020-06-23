@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private static final String TAG = "MainActivity";
 
     // Mac-Adressen und UUIDs der Bluetooth Module am Lilypad
-    private static final String[] MAC_ADDRESSES = {"00:00:00:00:01", "00:00:00:00:02"};
+    private static final String[] MAC_ADDRESSES = {"00:13:01:04:18:76", "00:00:00:00:00:02"};
     private static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private LocationManager locationManager;
@@ -247,8 +247,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 try {
                     BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
                     BluetoothSocket bluetoothSocket = bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid);
+                    bluetoothSocket.connect();
                     outputStreams.add(bluetoothSocket.getOutputStream());
                     Log.i(TAG, "Connected to: " + macAddress);
+                    // Motoren testen (bei Bedarf aktivieren)
+                    //notifyTargetReached();
                 } catch (Exception e) {
                     Log.e(TAG, "Bluetooth connection error: " + e);
                     Toast.makeText(this, "Connection error with MAC address: " + macAddress, Toast.LENGTH_LONG).show();
@@ -265,29 +268,29 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     private void notifyDelta(float delta) {
-        int hand = delta >= 0 ? 0 : 1;
+        int hand = delta >= 0 ? 0 : 0;
         float absoluteDelta = Math.abs(delta);
-        if (absoluteDelta > 5.0) {
+        if (absoluteDelta > 80.0) {
             activateMotor(hand, 0);
-        }
-        else if (absoluteDelta > 10.0) {
             activateMotor(hand, 1);
-        }
-        else if (absoluteDelta > 20.0) {
             activateMotor(hand, 2);
-        }
-        else if (absoluteDelta > 40.0) {
             activateMotor(hand, 3);
         }
         else if (absoluteDelta > 60.0) {
             activateMotor(hand, 2);
             activateMotor(hand, 3);
         }
-        else if (absoluteDelta > 80.0) {
-            activateMotor(hand, 0);
-            activateMotor(hand, 1);
-            activateMotor(hand, 2);
+        else if (absoluteDelta > 40.0) {
             activateMotor(hand, 3);
+        }
+        else if (absoluteDelta > 20.0) {
+            activateMotor(hand, 2);
+        }
+        else if (absoluteDelta > 10.0) {
+            activateMotor(hand, 1);
+        }
+        else if (absoluteDelta > 5.0) {
+            activateMotor(hand, 0);
         }
     }
 
