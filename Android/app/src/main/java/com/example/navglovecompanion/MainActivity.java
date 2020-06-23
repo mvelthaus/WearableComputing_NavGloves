@@ -35,18 +35,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private static final int BLUETOOTH_PERMISSION_CHECK_CODE = 24;
     private static final String TAG = "MainActivity";
 
-    // Mac-Adressen der Bluetooth Module am Lilypad
-    private final String[] macAdresses = {"00:00:00:00:01", "00:00:00:00:02"};
+    // Mac-Adressen und UUIDs der Bluetooth Module am Lilypad
+    private static final String[] MAC_ADDRESSES = {"00:00:00:00:01", "00:00:00:00:02"};
+    private static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    LocationManager locationManager;
-    Location lastLocation;
-    Location target;
-    TextView outputField;
+    // Location zum Testen
+    //private static final double LONG = 9.442749;
+    //private static final double LAT = 54.778514;
 
-    Location location;
-    // Location test;
-    //private final double LONG =9.442749;
-    //private final double LAT= 54.778514;
+    private LocationManager locationManager;
+    private Location target;
     private Button naviBtn;
     private EditText input;
     private TextView displayBearing;
@@ -54,18 +52,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private boolean isTarget = false;
     private boolean stateBtn = false;
     private String out;
-
-    private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private List<OutputStream> outputStreams;
 
-    // lifecycle methods
+    // Lifecycle Methoden
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // outputField = (TextView) findViewById(R.id.outputField);
         input = findViewById(R.id.input);
         displayBearing = (TextView) findViewById(R.id.displayBearing);
         displayDis = (TextView) findViewById(R.id.displayDis);
@@ -78,11 +73,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
-
-        /* spezifisch für den Empfang von Intents aus HERE Maps und OSMand
-         * HERE Maps (work in Progress): Die Location befindet sich im Link, daher beim https splitten und den Link per Uri parsen lassen (handleIntent())
-         * Aus dem String path muss dann noch latitude und logitude extrahiert werden (bisher nicht implementiert)
-         */
 
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             String sharedData = intent.getStringExtra(Intent.EXTRA_TEXT);
@@ -129,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
     }
 
-    // event methods
+    // Event Methoden
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -187,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
     }
 
-    // location methods
+    // Location Methoden
 
     private void startLocation() {
         try {
@@ -234,8 +224,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
     }
 
-    // link handling methods
+    // Parsing Methoden
 
+    // Spezifisch für den Empfang von Intents aus HERE Maps und OSMand
+    // HERE Maps (work in Progress): Die Location befindet sich im Link, daher beim https splitten und den Link per Uri parsen lassen (handleIntent())
+    // Aus dem String path muss dann noch latitude und logitude extrahiert werden (bisher nicht implementiert)
     private String handleHERELinks(String data) {
         // TODO Save `goal`
         data = data.split("https://")[1];
@@ -244,13 +237,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         String server = uri.getAuthority();
         String path = uri.getPath();
         Set<String> args = uri.getQueryParameterNames();
-//        Log.i("Protocol", protocol);
-//        Log.i("Server", server);
-//        Log.i("Path", path);
-
-//        for(String arg: args) {
-//            Log.i("Args", arg);
-//        }
         return path;
     }
 
@@ -264,12 +250,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         return location;
     }
 
-    // bluetooth methods
+    // Bluetooth Methoden
 
     private void startBluetoothConnection() {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter != null) {
-            for (String macAddress : macAdresses) {
+            for (String macAddress : MAC_ADDRESSES) {
                 try {
                     BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
                     BluetoothSocket bluetoothSocket = bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid);
