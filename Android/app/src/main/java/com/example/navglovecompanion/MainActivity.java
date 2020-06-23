@@ -10,8 +10,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -28,7 +26,6 @@ import androidx.core.content.ContextCompat;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,13 +45,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     private LocationManager locationManager;
     private Location target;
-    private Button naviBtn;
-    private EditText input;
-    private TextView displayBearing;
-    private TextView displayDis;
-    private boolean stateBtn = false;
-    private String out;
+    private boolean doNavigation = false;
     private List<OutputStream> outputStreams;
+
+    private Button naviBtn;
+    private EditText inputView;
+    private TextView bearingView;
+    private TextView distanceView;
 
     // Lifecycle Methoden
 
@@ -63,9 +60,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        input = findViewById(R.id.input);
-        displayBearing = (TextView) findViewById(R.id.displayBearing);
-        displayDis = (TextView) findViewById(R.id.displayDis);
+        inputView = findViewById(R.id.input);
+        bearingView = (TextView) findViewById(R.id.displayBearing);
+        distanceView = (TextView) findViewById(R.id.displayDis);
 
         naviBtn = findViewById(R.id.naviBtn);
         naviBtn.setOnClickListener(this);
@@ -78,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             String sharedData = intent.getStringExtra(Intent.EXTRA_TEXT);
-            input.setText(sharedData);
+            inputView.setText(sharedData);
         }
     }
 
@@ -150,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onClick(View v) {
-        target = parseLocationString(input.getText().toString());
+        target = parseLocationString(inputView.getText().toString());
         if (target != null) {
             startTracking();
         }
@@ -182,27 +179,27 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     private void startTracking() {
-        if (stateBtn) {
-            input.setEnabled(true);
+        if (doNavigation) {
+            inputView.setEnabled(true);
             naviBtn.setText("Navigate to Position");
-            displayDis.setText("");
-            displayBearing.setText("");
+            distanceView.setText("");
+            bearingView.setText("");
             target = null;
         } else {
-            stateBtn = true;
+            doNavigation = true;
         }
     }
 
     private void setInfo(Location location) {
-        if (stateBtn) {
-            input.setEnabled(false);
+        if (doNavigation) {
+            inputView.setEnabled(false);
             naviBtn.setText("Stop Navigation");
-            stateBtn = false;
+            doNavigation = false;
             float distance = location.distanceTo(target);
             float bearing = location.bearingTo(target);
 
-            displayDis.setText(String.format("%.2f", distance));
-            displayBearing.setText(String.format("%.2f", bearing));
+            distanceView.setText(String.format("%.2f", distance));
+            bearingView.setText(String.format("%.2f", bearing));
         }
     }
 
