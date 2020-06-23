@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private EditText input;
     private TextView displayBearing;
     private TextView displayDis;
-    private boolean isTarget = false;
     private boolean stateBtn = false;
     private String out;
     private List<OutputStream> outputStreams;
@@ -79,14 +78,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             String sharedData = intent.getStringExtra(Intent.EXTRA_TEXT);
-            target = parseLocationString(sharedData);
-            if (target != null) {
-                isTarget = true;
-                input.setText(convertLocationToString(target));
-            }
-            else {
-                isTarget = false;
-            }
+            input.setText(sharedData);
         }
     }
 
@@ -158,10 +150,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onClick(View v) {
-        if (isTarget) {
+        target = parseLocationString(input.getText().toString());
+        if (target != null) {
             startTracking();
-        } else {
-            Toast.makeText(this, "No target position exists!", Toast.LENGTH_LONG).show();
+        }
+        else {
+            Toast.makeText(this, "The entered text does not describe a valid position", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -212,8 +206,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
     }
 
-    // Parsing Methoden
-
     private String convertLocationToString(Location location) {
         return location.getLatitude() + ", " + location.getLongitude();
     }
@@ -232,7 +224,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
         else {
             Log.d(TAG, "Location string does not match pattern");
-            Toast.makeText(this, "The entered text does not describe a valid position", Toast.LENGTH_LONG).show();
             return null;
         }
     }
