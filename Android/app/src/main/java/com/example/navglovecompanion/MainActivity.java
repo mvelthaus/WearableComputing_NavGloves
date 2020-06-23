@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, View.OnClickListener {
     private static final int LOCATION_PERMISSIONS_CHECK_CODE = 23;
@@ -76,28 +79,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             String sharedData = intent.getStringExtra(Intent.EXTRA_TEXT);
-            if (sharedData != null) {
-                Log.d(TAG, "Shared data: " + sharedData);
-                String out = "";
-                if (sharedData.contains("geo:")) {
-                    target = handleOSMLinks(sharedData);
-                    out = target.toString();
-                    isTarget = true;
-
-                } else if (sharedData.contains("https://")) {
-                    out = handleHERELinks(sharedData);
-                    isTarget = true;
-
-                } else {
-                    out = "Invalid Data. Use HERE Maps or OSMand for location.";
-                    isTarget = false;
-                }
-                // outputField.setText(out);
-                input.setText(out);
-                // Log.i(TAG, sharedData);
+            target = parseLocationString(sharedData);
+            if (target != null) {
+                isTarget = true;
+                input.setText(convertLocationToString(target));
             }
             else {
-                Log.d(TAG, "No shared data");
+                isTarget = false;
             }
         }
     }
@@ -226,28 +214,27 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     // Parsing Methoden
 
-    // Spezifisch für den Empfang von Intents aus HERE Maps und OSMand
-    // HERE Maps (work in Progress): Die Location befindet sich im Link, daher beim https splitten und den Link per Uri parsen lassen (handleIntent())
-    // Aus dem String path muss dann noch latitude und logitude extrahiert werden (bisher nicht implementiert)
-    private String handleHERELinks(String data) {
-        // TODO Save `goal`
-        data = data.split("https://")[1];
-        Uri uri = Uri.parse(data);
-        String protocol = uri.getScheme();
-        String server = uri.getAuthority();
-        String path = uri.getPath();
-        Set<String> args = uri.getQueryParameterNames();
-        return path;
+    private String convertLocationToString(Location location) {
+        return location.getLatitude() + ", " + location.getLongitude();
     }
 
-    private Location handleOSMLinks(String data) {
-        String[] locationStrings = data.split("geo:")[1].split("\\?z=")[0].split(",");
-        double latitude = Double.parseDouble(locationStrings[0]);
-        double longitude = Double.parseDouble(locationStrings[1]);
-        Location location = new Location("TargetLocation");
-        location.setLatitude(latitude);
-        location.setLongitude(longitude);
-        return location;
+    private Location parseLocationString(String locationStr) {
+        Pattern p = Pattern.compile("([-+]?\\d*\\.?\\d+)\\D+([-+]?\\d*\\.?\\d+)");
+        Matcher m = p.matcher(locationStr);
+        if (m.find()) {
+            double latitude = Double.parseDouble(m.group(1));
+            double longitude = Double.parseDouble(m.group(2));
+            Log.d(TAG, "Location: " + latitude + ", " + longitude);
+            Location location = new Location(LocationManager.GPS_PROVIDER);
+            location.setLatitude(latitude);
+            location.setLongitude(longitude);
+            return location;
+        }
+        else {
+            Log.d(TAG, "Location string does not match pattern");
+            Toast.makeText(this, "The entered text does not describe a valid position", Toast.LENGTH_LONG).show();
+            return null;
+        }
     }
 
     // Bluetooth Methoden
