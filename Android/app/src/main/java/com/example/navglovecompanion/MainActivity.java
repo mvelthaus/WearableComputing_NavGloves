@@ -251,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     outputStreams.add(bluetoothSocket.getOutputStream());
                     Log.i(TAG, "Connected to: " + macAddress);
                     // Motoren testen (bei Bedarf aktivieren)
-                    //notifyTargetReached();
+                    notifyTargetReached();
                 } catch (Exception e) {
                     Log.e(TAG, "Bluetooth connection error: " + e);
                     Toast.makeText(this, "Connection error with MAC address: " + macAddress, Toast.LENGTH_LONG).show();
@@ -294,14 +294,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
     }
 
-    private void activateMotor(int hand, int motor) {
-        String msg = Integer.toString(motor);
-        byte[] buffer = msg.getBytes();
-        try {
-            Log.d(TAG, "Activating motor " + motor + " on hand " + hand);
-            outputStreams.get(hand).write(buffer);
-        } catch (Exception e) {
-            Log.e(TAG, "Bluetooth sending error: " + e);
-        }
+    private void activateMotor(final int hand, final int motor) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Log.d(TAG, "Activating motor " + motor + " on hand " + hand);
+                    byte[] buffer = Integer.toString(motor).getBytes();
+                    outputStreams.get(hand).write(buffer);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error while activating motor: " + e);
+                }
+            }
+        }).start();
     }
 }
