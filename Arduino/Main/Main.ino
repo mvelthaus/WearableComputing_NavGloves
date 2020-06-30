@@ -4,6 +4,7 @@
 int pins[] = {6, 9, 10, 12};
 const int PINS = 4;
 const int VIBRATE_COUNT = 3;
+const int VIBRATE_DELAY = 300;
 
 const int RX_PIN = 0;
 const int TX_PIN = 1;
@@ -48,7 +49,7 @@ void loop()
   for (int i = 0; i < PINS; i++) {
     if (switchCount[i] > 0 && switchTime[i] <= now) {
       switchCount[i]--;
-      switchTime[i] = now + 300;
+      switchTime[i] = now + VIBRATE_DELAY;
       if (digitalRead(pins[i]) == LOW)
         digitalWrite(pins[i], HIGH);
       else
