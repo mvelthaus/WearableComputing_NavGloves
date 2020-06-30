@@ -30,20 +30,21 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MainActivity extends AppCompatActivity implements LocationListener, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements LocationListener {
     private static final int LOCATION_PERMISSIONS_CHECK_CODE = 23;
     private static final int BLUETOOTH_PERMISSION_CHECK_CODE = 24;
     private static final String TAG = "MainActivity";
 
     // Mac-Adressen und UUIDs der Bluetooth Module am Lilypad
-    private static final String[] MAC_ADDRESSES = {"00:13:01:04:18:76", "00:00:00:00:00:02"};
+    private static final String[] MAC_ADDRESSES = {"00:13:01:04:18:76"}; // TODO Zweite Adresse hinzufügen
     private static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+    public static List<OutputStream> outputStreams;
 
     private LocationManager locationManager;
     private Location previousLocation;
     private Location target;
     private boolean doNavigation = false;
-    private List<OutputStream> outputStreams;
 
     private Button naviBtn;
     private EditText inputView;
@@ -62,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         distanceView = (TextView) findViewById(R.id.displayDis);
 
         naviBtn = findViewById(R.id.naviBtn);
-        naviBtn.setOnClickListener(this);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         outputStreams = new ArrayList<>();
 
@@ -146,8 +146,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
     }
 
-    @Override
-    public void onClick(View v) {
+    public void onNaviClick(View v) {
         if (doNavigation) {
             target = null;
             previousLocation = null;
@@ -170,6 +169,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 Toast.makeText(this, "The entered text does not describe a valid position", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    public void onDebugClick(View v) {
+        Intent intent = new Intent(this, DebugActivity.class);
+        startActivity(intent);
     }
 
     // Location Methoden
@@ -250,8 +254,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     bluetoothSocket.connect();
                     outputStreams.add(bluetoothSocket.getOutputStream());
                     Log.i(TAG, "Connected to: " + macAddress);
-                    // Motoren testen (bei Bedarf aktivieren)
-                    notifyTargetReached();
                 } catch (Exception e) {
                     Log.e(TAG, "Bluetooth connection error: " + e);
                     Toast.makeText(this, "Connection error with MAC address: " + macAddress, Toast.LENGTH_LONG).show();
@@ -268,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     private void notifyDelta(float delta) {
-        int hand = delta >= 0 ? 0 : 0;
+        int hand = delta >= 0 ? 0 : 1;
         float absoluteDelta = Math.abs(delta);
         if (absoluteDelta > 80.0) {
             activateMotor(hand, 0);
