@@ -98,12 +98,5 @@ void activateMotor(int motorId)
 
 boolean validInput(int input)
 {
-  for (int i = 0; i < PINS; i++)
-  {
-    if (input == i)
-    {
-      return true;
-    }
-  }
-  return false;
+  return input >= 0 && input < PINS;
 }
