@@ -11,6 +11,9 @@ const int TX_PIN = 1;
 //SoftwareSerial blueSerial(RX_PIN, TX_PIN);
 const int BAUD_RATE = 9600;
 
+unsigned char switchCount[] = {0, 0, 0, 0};
+unsigned long switchTime[] = {0, 0, 0, 0};
+
 void setup()
 {
   Serial.begin(BAUD_RATE);
@@ -32,13 +35,25 @@ void loop()
   if (Serial1.available()) {
     int inChar = Serial1.read();
     //Serial.println(inChar);
-    String inString = ""; 
+    String inString = "";
     inString += (char) inChar;
 
     int intInput = inString.toInt();
     // Serial.print("Input=");
     // Serial.println(intInput);
     handleSerialInput(intInput);
+  }
+
+  unsigned long now = millis();
+  for (int i = 0; i < PINS; i++) {
+    if (switchCount[i] > 0 && switchTime[i] <= now) {
+      switchCount[i]--;
+      switchTime[i] = now + 300;
+      if (digitalRead(pins[i]) == LOW)
+        digitalWrite(pins[i], HIGH);
+      else
+        digitalWrite(pins[i], LOW);
+    }
   }
 
   // if (Serial.available())
@@ -67,15 +82,18 @@ void activateMotor(int motorId)
   Serial.print("Activate Motor: ");
   Serial.println(motorId);
 
-  int pin = pins[motorId];
+  switchCount[motorId] = VIBRATE_COUNT * 2;
+  switchTime[motorId] = millis();
 
-  for (int i = 0; i < VIBRATE_COUNT; i++)
-  {
+  /*int pin = pins[motorId];
+
+    for (int i = 0; i < VIBRATE_COUNT; i++)
+    {
     digitalWrite(pin, HIGH);
     delay(300);
     digitalWrite(pin, LOW);
     delay(300);
-  }
+  }*/
 }
 
 boolean validInput(int input)
