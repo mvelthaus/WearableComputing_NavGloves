@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 // Motoren mit Pins 6, 9, 10 und 12 verbinden
 // Bluetooth-Modul mit TX -> RX und TX -> RX verbinden
-int pins[] = {6, 9, 10, 12};
+int pins[] = {12, 6, 9, 10};
 const int PINS = 4;
 const int VIBRATE_COUNT = 3;
 const int VIBRATE_DELAY = 300;
@@ -9,7 +9,6 @@ const int VIBRATE_DELAY = 300;
 const int RX_PIN = 0;
 const int TX_PIN = 1;
 
-//SoftwareSerial blueSerial(RX_PIN, TX_PIN);
 const int BAUD_RATE = 9600;
 
 unsigned char switchCount[] = {0, 0, 0, 0};
@@ -19,7 +18,6 @@ void setup()
 {
   Serial.begin(BAUD_RATE);
   Serial1.begin(BAUD_RATE);
-  //blueSerial.begin(BAUD_RATE);
 
   for (int i = 0; i < PINS; i++)
   {
@@ -29,10 +27,6 @@ void setup()
 
 void loop()
 {
-  // Simulation
-  // activateMotor (random(4));
-  // delay(1000);
-
   if (Serial1.available()) {
     int inChar = Serial1.read();
     //Serial.println(inChar);
@@ -40,8 +34,6 @@ void loop()
     inString += (char) inChar;
 
     int intInput = inString.toInt();
-    // Serial.print("Input=");
-    // Serial.println(intInput);
     handleSerialInput(intInput);
   }
 
