@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private static final String TAG = "MainActivity";
 
     // Mac-Adressen und UUIDs der Bluetooth Module am Lilypad
-    private static final String[] MAC_ADDRESSES = {"00:13:01:04:18:76"}; // TODO Zweite Adresse hinzufügen
+    private static final String[] MAC_ADDRESSES = {"00:13:01:04:18:76", "98:d3:a1:f5:ca:e7"};
     private static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     public static List<OutputStream> outputStreams;
