@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
 
         inputView = findViewById(R.id.input);
