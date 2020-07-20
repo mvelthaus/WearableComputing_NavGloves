@@ -229,6 +229,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 float bearingTarget = location.bearingTo(target);
                 float bearingPrevious = previousLocation.bearingTo(location);
                 float bearingDelta = bearingTarget - bearingPrevious;
+                if (bearingDelta < -180)
+                    bearingDelta += 360;
+                else if (bearingDelta > 180)
+                    bearingDelta -= 360;
                 previousLocation = location;
                 Log.v(TAG, "Bearing to target: " + bearingTarget);
                 Log.v(TAG, "Bearing from previous: " + bearingPrevious);
