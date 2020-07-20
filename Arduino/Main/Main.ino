@@ -75,6 +75,7 @@ void activateMotor(int motorId)
   Serial.print("Activate Motor: ");
   Serial.println(motorId);
 
+  digitalWrite(pins[motorId], LOW);
   switchCount[motorId] = VIBRATE_COUNT * 2;
   switchTime[motorId] = millis();
 
