@@ -12,12 +12,13 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/naviBtn"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.192" />
-<!--
+    <!--
     <TextView
         android:id="@+id/outputField"
         android:layout_width="wrap_content"
@@ -34,10 +35,11 @@
         android:id="@+id/naviBtn"
         android:layout_width="141dp"
         android:layout_height="59dp"
-        android:text="Navigate to Position"
         android:onClick="onNaviClick"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="Navigate to Position"
+        app:layout_constraintBottom_toTopOf="@+id/displayDis"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/input"
         app:layout_constraintVertical_bias="0.157" />
@@ -47,12 +49,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Distance"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/displayBearing"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/naviBtn"
-        app:layout_constraintVertical_bias="0.24" />
+        app:layout_constraintTop_toBottomOf="@+id/naviBtn" />
 
     <TextView
         android:id="@+id/displayBearing"
@@ -61,7 +62,7 @@
         android:text="Bearing"
         app:layout_constraintBottom_toTopOf="@+id/debugBtn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/displayDis" />
 
@@ -69,8 +70,8 @@
         android:id="@+id/debugBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Debugging"
         android:onClick="onDebugClick"
+        android:text="Start Debugging"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
