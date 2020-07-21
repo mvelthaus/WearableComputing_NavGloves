@@ -31,10 +31,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private static final int LOCATION_PERMISSIONS_CHECK_CODE = 23;
     private static final int BLUETOOTH_PERMISSION_CHECK_CODE = 24;
     private static final String TAG = "MainActivity";
+    private static final int LOCATIONS_SIZE = 10;
 
     private BluetoothService bluetoothService = null;
     private LocationManager locationManager;
-    private Location previousLocation;
+    private Location[] locations;
+    private int locationsIndex = -1;
     private Location target;
 
     private boolean doNavigation = false;
@@ -166,7 +168,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void onNaviClick(View v) {
         if (doNavigation) {
             target = null;
-            previousLocation = null;
+            locations = null;
+            locationsIndex = -1;
             doNavigation = false;
             inputView.setEnabled(true);
             naviBtn.setText("Start Navigation");
@@ -174,7 +177,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             bearingView.setText("");
         } else {
             target = parseLocationString(inputView.getText().toString());
-            previousLocation = null;
+            locations = new Location[LOCATIONS_SIZE];
+            locationsIndex = 0;
             if (target != null) {
                 doNavigation = true;
                 inputView.setEnabled(false);
@@ -204,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 } else {
                     Log.d(TAG, "No last known position");
                 }
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1, this);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1, this);
                 Log.d(TAG, "Location init successful");
             } else {
                 Toast.makeText(this, "GPS has to be enabled to track your position.", Toast.LENGTH_LONG).show();
@@ -215,9 +219,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     private void setInfo(Location location) {
-        if (previousLocation == null) {
-            previousLocation = location;
-        }
         float distance = location.distanceTo(target);
         if (distance < 5.0) {
             distanceView.setText("Target reached.");
@@ -226,15 +227,22 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
         else {
             distanceView.setText(String.format("Distance: %.2f", distance));
-            if (previousLocation != null && location.distanceTo(previousLocation) > 5.0) {
+            if (locationsIndex < LOCATIONS_SIZE) {
+                locations[locationsIndex] = location;
+                Log.v(TAG, "Previous location " + locationsIndex + " initialized");
+                locationsIndex++;
+                Log.v(TAG, "Set previous locations index: " + locationsIndex);
+            }
+            else {
+                System.arraycopy(locations, 1, locations, 0, LOCATIONS_SIZE - 1);
+                locations[LOCATIONS_SIZE - 1] = location;
                 float bearingTarget = location.bearingTo(target);
-                float bearingPrevious = previousLocation.bearingTo(location);
+                float bearingPrevious = calculateCourse();
                 float bearingDelta = bearingTarget - bearingPrevious;
                 if (bearingDelta < -180)
                     bearingDelta += 360;
                 else if (bearingDelta > 180)
                     bearingDelta -= 360;
-                previousLocation = location;
                 Log.v(TAG, "Bearing to target: " + bearingTarget);
                 Log.v(TAG, "Bearing from previous: " + bearingPrevious);
                 Log.v(TAG, "Bearing delta: " + bearingDelta);
@@ -242,6 +250,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 notifyDelta(bearingDelta);
             }
         }
+    }
+
+    private float calculateCourse() {
+        float lengthSum = 0;
+        float courseSum = 0;
+        for (int i = 0; i < LOCATIONS_SIZE; i++) {
+            for (int j = i + 1; j < LOCATIONS_SIZE; j++) {
+                float d = locations[i].distanceTo(locations[j]);
+                float c = locations[i].bearingTo(locations[j]);
+                lengthSum += d;
+                courseSum += c * d;
+            }
+        }
+        return courseSum / lengthSum;
     }
 
     private Location parseLocationString(String locationStr) {
