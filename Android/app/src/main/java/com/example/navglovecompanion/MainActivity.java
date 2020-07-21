@@ -257,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         float courseSum = 0;
         for (int i = 0; i < LOCATIONS_SIZE; i++) {
             for (int j = i + 1; j < LOCATIONS_SIZE; j++) {
-                float d = locations[i].distanceTo(locations[j]);
+                float d = (float) Math.pow(locations[i].distanceTo(locations[j]), 2);
                 float c = locations[i].bearingTo(locations[j]);
                 lengthSum += d;
                 courseSum += c * d;
