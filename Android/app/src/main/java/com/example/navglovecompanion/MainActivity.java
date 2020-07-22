@@ -42,13 +42,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private boolean doNavigation = false;
 
     private Button naviBtn;
-    private EditText inputView;
-    private TextView bearingView;
-    private TextView distanceView;
+    private EditText inputField;
+    private TextView deltaText;
+    private TextView distanceText;
 
     // Service connection handler
 
-    private final ServiceConnection connection = new ServiceConnection() {
+    private final ServiceConnection bluetoothConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder binder) {
             bluetoothService = ((BluetoothService.BluetoothServiceBinder) binder).getService();
@@ -68,9 +68,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
 
-        inputView = findViewById(R.id.input);
-        bearingView = (TextView) findViewById(R.id.displayBearing);
-        distanceView = (TextView) findViewById(R.id.displayDis);
+        inputField = findViewById(R.id.inputField);
+        deltaText = (TextView) findViewById(R.id.deltaText);
+        distanceText = (TextView) findViewById(R.id.distanceText);
         naviBtn = findViewById(R.id.naviBtn);
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -81,10 +81,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             String sharedData = intent.getStringExtra(Intent.EXTRA_TEXT);
-            inputView.setText(sharedData);
+            inputField.setText(sharedData);
         }
         // Activate for debugging
-        //inputView.setText("54.7748757451, 9.45588403779");
+        inputField.setText("54.7748757451, 9.45588403779");
     }
 
     @Override
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         super.onStop();
 
         if (bluetoothService != null) {
-            unbindService(connection);
+            unbindService(bluetoothConnection);
             bluetoothService = null;
         }
     }
@@ -171,20 +171,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             locations = null;
             locationsIndex = -1;
             doNavigation = false;
-            inputView.setEnabled(true);
+            inputField.setEnabled(true);
             naviBtn.setText("Start Navigation");
-            distanceView.setText("");
-            bearingView.setText("");
+            distanceText.setText("");
+            deltaText.setText("");
         } else {
-            target = parseLocationString(inputView.getText().toString());
+            target = parseLocationString(inputField.getText().toString());
             locations = new Location[LOCATIONS_SIZE];
             locationsIndex = 0;
             if (target != null) {
                 doNavigation = true;
-                inputView.setEnabled(false);
+                inputField.setEnabled(false);
                 naviBtn.setText("Stop Navigation");
-                distanceView.setText("Start moving...");
-                bearingView.setText("---");
+                distanceText.setText("Start moving...");
+                deltaText.setText("---");
             }
             else {
                 Toast.makeText(this, "The entered text does not describe a valid position", Toast.LENGTH_LONG).show();
@@ -221,12 +221,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private void setInfo(Location location) {
         float distance = location.distanceTo(target);
         if (distance < 5.0) {
-            distanceView.setText("Target reached.");
-            bearingView.setText("---");
+            distanceText.setText("Target reached.");
+            deltaText.setText("---");
             notifyTargetReached();
         }
         else {
-            distanceView.setText(String.format("Distance: %.2f", distance));
+            distanceText.setText(String.format("Distance: %.2f", distance));
             if (locationsIndex < LOCATIONS_SIZE) {
                 locations[locationsIndex] = location;
                 Log.v(TAG, "Previous location " + locationsIndex + " initialized");
@@ -236,18 +236,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             else {
                 System.arraycopy(locations, 1, locations, 0, LOCATIONS_SIZE - 1);
                 locations[LOCATIONS_SIZE - 1] = location;
-                float bearingTarget = location.bearingTo(target);
-                float bearingPrevious = calculateCourse();
-                float bearingDelta = bearingTarget - bearingPrevious;
-                if (bearingDelta < -180)
-                    bearingDelta += 360;
-                else if (bearingDelta > 180)
-                    bearingDelta -= 360;
-                Log.v(TAG, "Bearing to target: " + bearingTarget);
-                Log.v(TAG, "Bearing from previous: " + bearingPrevious);
-                Log.v(TAG, "Bearing delta: " + bearingDelta);
-                bearingView.setText(String.format("Bearing: %.2f", bearingDelta));
-                notifyDelta(bearingDelta);
+                float bearing = location.bearingTo(target);
+                float course = calculateCourse();
+                float delta = bearing - course;
+                if (delta < -180)
+                    delta += 360;
+                else if (delta > 180)
+                    delta -= 360;
+                Log.v(TAG, "Bearing: " + bearing);
+                Log.v(TAG, "Course: " + course);
+                Log.v(TAG, "Delta: " + delta);
+                deltaText.setText(String.format("Delta: %.2f", delta));
+                notifyDelta(delta);
             }
         }
     }
@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private void bindBluetoothService() {
         if (bluetoothService == null) {
             Intent intent = new Intent(this, BluetoothService.class);
-            if (!bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
+            if (!bindService(intent, bluetoothConnection, Context.BIND_AUTO_CREATE)) {
                 Toast.makeText(this, "Binding to Bluetooth service failed", Toast.LENGTH_LONG).show();
             }
         }
