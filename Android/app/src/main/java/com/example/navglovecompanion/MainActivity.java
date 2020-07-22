@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private static final int LOCATIONS_SIZE = 10;
 
     private BluetoothService bluetoothService = null;
+    private NavigationService navigationService = null;
     private LocationManager locationManager;
     private Location[] locations;
     private int locationsIndex = -1;
@@ -57,6 +58,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         @Override
         public void onServiceDisconnected(ComponentName className) {
             bluetoothService = null;
+        }
+    };
+
+    private final ServiceConnection navigationConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder binder) {
+            navigationService = ((NavigationService.NavigationServiceBinder) binder).getService();
+            if (navigationService.getState() == 1) {
+
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            navigationService = null;
         }
     };
 
@@ -100,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSIONS_CHECK_CODE);
         } else {
+            bindNavigationService();
             startLocation();
         }
     }
@@ -112,6 +129,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             unbindService(bluetoothConnection);
             bluetoothService = null;
         }
+        if (navigationService != null) {
+            unbindService(navigationConnection);
+            navigationService = null;
+        }
     }
 
     // Event Methoden
@@ -120,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == LOCATION_PERMISSIONS_CHECK_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                bindNavigationService();
                 startLocation();
             } else {
                 Toast.makeText(this, "Location permissions are required to track your position.", Toast.LENGTH_LONG).show();
@@ -167,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     public void onNaviClick(View v) {
         if (doNavigation) {
+            navigationService.stopNavigation();
             target = null;
             locations = null;
             locationsIndex = -1;
@@ -176,6 +199,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             distanceText.setText("");
             deltaText.setText("");
         } else {
+            navigationService.startNavigation();
             target = parseLocationString(inputField.getText().toString());
             locations = new Location[LOCATIONS_SIZE];
             locationsIndex = 0;
@@ -198,6 +222,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     // Location Methoden
+
+    private void bindNavigationService() {
+        if (navigationService == null) {
+            Intent intent = new Intent(this, NavigationService.class);
+            if (!bindService(intent, navigationConnection, Context.BIND_AUTO_CREATE)) {
+                Toast.makeText(this, "Binding to navigation service failed", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
     private void startLocation() {
         try {
