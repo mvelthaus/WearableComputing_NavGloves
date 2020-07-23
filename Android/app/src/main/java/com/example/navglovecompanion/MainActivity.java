@@ -159,7 +159,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onStateChange(int oldState, int newState) {
-        syncUiWithState();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                syncUiWithState();
+            }
+        });
     }
 
     @Override

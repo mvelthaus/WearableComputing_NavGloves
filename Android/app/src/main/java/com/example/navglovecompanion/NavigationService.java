@@ -5,13 +5,17 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class NavigationService extends Service {
 
@@ -36,6 +40,10 @@ public class NavigationService extends Service {
     private static final String NOTIFICATION_CHANNEL_ID = "NAVI";
     private static final int ONGOING_NOTIFICATION_ID = 23;
 
+    // Mac-Adressen und UUIDs der Bluetooth Module am Lilypad
+    private static final String[] MAC_ADDRESSES = {"00:13:01:04:18:76", "98:d3:a1:f5:ca:e7"};
+    private static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
     private static final int MSG_SERVICE_CREATED = 0;
     private static final int MSG_BLUETOOTH_CONNECTED = 1;
     private static final int MSG_BLUETOOTH_ERROR = 2;
@@ -46,7 +54,8 @@ public class NavigationService extends Service {
 
     private final IBinder binder = new NavigationServiceBinder();
 
-    ArrayList<NavigationServiceListener> listeners = new ArrayList<NavigationServiceListener>();
+    private ArrayList<NavigationServiceListener> listeners = new ArrayList<>();
+    private ArrayList<BluetoothSocket> sockets = new ArrayList<>();
     private int state = STATE_STARTED;
 
     @Override
@@ -145,7 +154,6 @@ public class NavigationService extends Service {
         }
         catch (Exception e) {
             Log.e(TAG, "Error while sending message", e);
-            Toast.makeText(this, "Error in navigation service", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -211,7 +219,7 @@ public class NavigationService extends Service {
     }
 
     private void startState() {
-        Log.d(TAG, "onStateStart " + state);
+        Log.d(TAG, "onStateStart: " + state);
         switch (state) {
             case STATE_STARTED:
                 Log.d(TAG, "STATE_STARTED");
@@ -237,7 +245,7 @@ public class NavigationService extends Service {
     }
 
     private void stopState() {
-        Log.d(TAG, "onStateEnd " + state);
+        Log.d(TAG, "onStateEnd: " + state);
         switch (state) {
             case STATE_STARTED:
                 Log.d(TAG, "STATE_STARTED");
@@ -263,7 +271,60 @@ public class NavigationService extends Service {
     // Bluetooth service
 
     private void startBluetooth() {
-        sendMessage(MSG_BLUETOOTH_CONNECTED);
+        Log.d(TAG, "startBluetooth");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                    if (bluetoothAdapter != null) { // Check to allow testing in emulator
+                        for (String macAddress : MAC_ADDRESSES) {
+                            BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
+                            BluetoothSocket bluetoothSocket = bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid);
+                            bluetoothSocket.connect();
+                            sockets.add(bluetoothSocket);
+                            Log.d(TAG, "Connected to glove: " + macAddress);
+                        }
+                    }
+                    sendMessage(MSG_BLUETOOTH_CONNECTED);
+                } catch (Exception e) {
+                    // TODO Introduce bluetooth-error state
+                    stopBluetooth();
+                    Log.e(TAG, "Unable to establish a Bluetooth connection", e);
+                }
+            }
+        }).start();
+    }
+
+    private void stopBluetooth() {
+        Log.d(TAG, "stopBluetooth");
+        for (BluetoothSocket socket : sockets) {
+            try {
+                socket.close();
+            }
+            catch (IOException e) {
+                Log.e(TAG, "Unable to close Bluetooth socket to " + socket.getRemoteDevice().getAddress(), e);
+            }
+        }
+        sockets.clear();
+        sendMessage(MSG_BLUETOOTH_ERROR);
+    }
+
+    private void activateMotor(final int hand, final int motor) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Log.d(TAG, "activateMotor: " + motor + ", " + hand);
+                    byte[] buffer = Integer.toString(motor).getBytes();
+                    sockets.get(hand).getOutputStream().write(buffer);
+                } catch (Exception e) {
+                    // TODO Introduce bluetooth-error state
+                    stopBluetooth();
+                    Log.e(TAG, "Unable to activate motor", e);
+                }
+            }
+        }).start();
     }
 
     // Location service
