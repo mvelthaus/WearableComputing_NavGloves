@@ -87,12 +87,18 @@ public class NavigationService extends Service {
         super.onDestroy();
     }
 
+    // Service control
+
     public void addStateChangeListener(NavigationServiceListener listener) {
         listeners.add(listener);
     }
 
     public void removeStateChangeListener(NavigationServiceListener listener) {
         listeners.remove(listener);
+    }
+
+    public int getState() {
+        return state;
     }
 
     public void startNavigation() {
@@ -204,7 +210,7 @@ public class NavigationService extends Service {
         }
     }
 
-    void startState() {
+    private void startState() {
         Log.d(TAG, "onStateStart " + state);
         switch (state) {
             case STATE_STARTED:
@@ -230,7 +236,7 @@ public class NavigationService extends Service {
         }
     }
 
-    void stopState() {
+    private void stopState() {
         Log.d(TAG, "onStateEnd " + state);
         switch (state) {
             case STATE_STARTED:

@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         public void onServiceConnected(ComponentName className, IBinder binder) {
             navigationService = ((NavigationService.NavigationServiceBinder) binder).getService();
             navigationService.addStateChangeListener(MainActivity.this);
+            syncUiWithState();
         }
 
         @Override
@@ -108,14 +109,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH}, BLUETOOTH_PERMISSION_CHECK_CODE);
         } else {
-            bindBluetoothService();
+            //bindBluetoothService();
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSIONS_CHECK_CODE);
         } else {
             bindNavigationService();
-            startLocation();
+            //startLocation();
         }
     }
 
@@ -141,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         if (requestCode == LOCATION_PERMISSIONS_CHECK_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 bindNavigationService();
-                startLocation();
+                //startLocation();
             } else {
                 Toast.makeText(this, "Location permissions are required to track your position.", Toast.LENGTH_LONG).show();
             }
@@ -149,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         if (requestCode == BLUETOOTH_PERMISSION_CHECK_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                bindBluetoothService();
+                //bindBluetoothService();
             } else {
                 Toast.makeText(this, "Bluetooth permissions are required.", Toast.LENGTH_LONG).show();
             }
@@ -158,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onStateChange(int oldState, int newState) {
-
+        syncUiWithState();
     }
 
     @Override
@@ -192,27 +193,19 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     public void onNaviClick(View v) {
-        if (doNavigation) {
+        if (navigationService.getState() > NavigationService.STATE_CONNECTED) {
             navigationService.stopNavigation();
             target = null;
             locations = null;
             locationsIndex = -1;
             doNavigation = false;
-            inputField.setEnabled(true);
-            naviBtn.setText("Start Navigation");
-            distanceText.setText("");
-            deltaText.setText("");
         } else {
-            navigationService.startNavigation();
             target = parseLocationString(inputField.getText().toString());
-            locations = new Location[LOCATIONS_SIZE];
-            locationsIndex = 0;
             if (target != null) {
                 doNavigation = true;
-                inputField.setEnabled(false);
-                naviBtn.setText("Stop Navigation");
-                distanceText.setText("Start moving...");
-                deltaText.setText("---");
+                locations = new Location[LOCATIONS_SIZE];
+                locationsIndex = 0;
+                navigationService.startNavigation();
             }
             else {
                 Toast.makeText(this, "The entered text does not describe a valid position", Toast.LENGTH_LONG).show();
@@ -223,6 +216,57 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     public void onDebugClick(View v) {
         Intent intent = new Intent(this, DebugActivity.class);
         startActivity(intent);
+    }
+
+    private void syncUiWithState() {
+        if (navigationService == null) {
+            Log.w(TAG, "Not connected to navigation service");
+            return;
+        }
+        switch (navigationService.getState()) {
+            case NavigationService.STATE_STARTED:
+                deltaText.setText("Service has been started.");
+                distanceText.setText("");
+                inputField.setEnabled(true);
+                naviBtn.setEnabled(false);
+                naviBtn.setText("Start Navigation");
+                break;
+            case NavigationService.STATE_CONNECTING:
+                deltaText.setText("Connecting to gloves...");
+                distanceText.setText("");
+                inputField.setEnabled(true);
+                naviBtn.setEnabled(false);
+                naviBtn.setText("Start Navigation");
+                break;
+            case NavigationService.STATE_CONNECTED:
+                deltaText.setText("Ready to navigate.");
+                distanceText.setText("");
+                inputField.setEnabled(true);
+                naviBtn.setEnabled(true);
+                naviBtn.setText("Start Navigation");
+                break;
+            case NavigationService.STATE_LOCATING:
+                deltaText.setText("Waiting for GPS...");
+                distanceText.setText("");
+                inputField.setEnabled(false);
+                naviBtn.setEnabled(true);
+                naviBtn.setText("Stop Navigation");
+                break;
+            case NavigationService.STATE_RUNNING:
+                deltaText.setText("Move 10m into one direction.");
+                distanceText.setText("");
+                inputField.setEnabled(false);
+                naviBtn.setEnabled(true);
+                naviBtn.setText("Stop Navigation");
+                break;
+            case NavigationService.STATE_FINISHED:
+                deltaText.setText("Target reached.");
+                distanceText.setText("");
+                inputField.setEnabled(false);
+                naviBtn.setEnabled(true);
+                naviBtn.setText("Stop Navigation");
+                break;
+        }
     }
 
     // Location Methoden
