@@ -27,7 +27,7 @@ import androidx.core.content.ContextCompat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MainActivity extends AppCompatActivity implements LocationListener {
+public class MainActivity extends AppCompatActivity implements LocationListener, NavigationService.NavigationServiceListener {
     private static final int LOCATION_PERMISSIONS_CHECK_CODE = 23;
     private static final int BLUETOOTH_PERMISSION_CHECK_CODE = 24;
     private static final String TAG = "MainActivity";
@@ -65,9 +65,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         @Override
         public void onServiceConnected(ComponentName className, IBinder binder) {
             navigationService = ((NavigationService.NavigationServiceBinder) binder).getService();
-            if (navigationService.getState() == 1) {
-
-            }
+            navigationService.addStateChangeListener(MainActivity.this);
         }
 
         @Override
@@ -130,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             bluetoothService = null;
         }
         if (navigationService != null) {
+            navigationService.removeStateChangeListener(this);
             unbindService(navigationConnection);
             navigationService = null;
         }
@@ -155,6 +154,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 Toast.makeText(this, "Bluetooth permissions are required.", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    @Override
+    public void onStateChange(int oldState, int newState) {
+
     }
 
     @Override
