@@ -79,7 +79,8 @@ public class MainActivity extends AppCompatActivity implements NavigationService
             inputField.setText(sharedData);
         }
         // Activate for debugging
-        inputField.setText("54.7748757451, 9.45588403779");
+        //inputField.setText("54.7748757451, 9.45588403779");
+        //inputField.setText("52.9421480488, 12.3939376012");
     }
 
     @Override

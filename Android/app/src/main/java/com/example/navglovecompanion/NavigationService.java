@@ -423,17 +423,36 @@ public class NavigationService extends Service implements LocationListener {
     }
 
     private float calculateCourse() {
-        float lengthSum = 0;
+        float distSum = 0;
         float courseSum = 0;
+        float courseSum_ = 0;
+        float coursePrev = 0;
+        float coursePrev_ = 0;
+        float diffSum = 0;
+        float diffSum_ = 0;
         for (int i = 0; i < LOCATIONS_SIZE; i++) {
             for (int j = i + 1; j < LOCATIONS_SIZE; j++) {
                 float d = (float) Math.pow(locations[i].distanceTo(locations[j]), 2);
                 float c = locations[i].bearingTo(locations[j]);
-                lengthSum += d;
+                float c_ = c < 0 ? c + 360 : c;
+                distSum += d;
                 courseSum += c * d;
+                courseSum_ += c_ * d;
+                if (i + j > 0) {
+                    diffSum += Math.pow(coursePrev - c, 2);
+                    diffSum_ += Math.pow(coursePrev_ - c_, 2);
+                }
+                coursePrev = c;
+                coursePrev_ = c_;
             }
         }
-        return courseSum / lengthSum;
+        float course = courseSum/distSum;
+        float course_ = courseSum_/distSum;
+        if (course_ > 180)
+            course_ -= 360;
+        Log.v(TAG, "Diff:   " + diffSum + " \\ " + diffSum_);
+        Log.v(TAG, "Course: " + course + " \\ " + course_);
+        return diffSum < diffSum_? course : course_;
     }
 
     private void startLocation() {
