@@ -359,6 +359,7 @@ public class NavigationService extends Service implements LocationListener {
                 } catch (Exception e) {
                     // TODO Introduce bluetooth-error state
                     stopBluetooth();
+                    sendMessage(MSG_BLUETOOTH_ERROR);
                     Log.e(TAG, "Unable to establish a Bluetooth connection", e);
                 }
                 //*/
@@ -377,7 +378,7 @@ public class NavigationService extends Service implements LocationListener {
             }
         }
         sockets.clear();
-        sendMessage(MSG_BLUETOOTH_ERROR);
+        // TODO Sent MSG_BLUETOOTH_STOPPED
     }
 
     private void activateMotor(final int hand, final int motor) {
@@ -389,9 +390,10 @@ public class NavigationService extends Service implements LocationListener {
                     byte[] buffer = Integer.toString(motor).getBytes();
                     sockets.get(hand).getOutputStream().write(buffer);
                 } catch (Exception e) {
+                    Log.e(TAG, "Unable to activate motor", e);
                     // TODO Introduce bluetooth-error state
                     stopBluetooth();
-                    Log.e(TAG, "Unable to activate motor", e);
+                    sendMessage(MSG_BLUETOOTH_ERROR);
                 }
             }
         }).start();
