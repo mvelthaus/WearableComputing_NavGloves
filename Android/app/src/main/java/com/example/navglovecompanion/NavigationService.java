@@ -361,6 +361,40 @@ public class NavigationService extends Service implements LocationListener {
         }).start();
     }
 
+    private void notifyTargetReached() {
+        for (int motor = 0; motor < 4; motor++) {
+            activateMotor(0, motor);
+            activateMotor(1, motor);
+        }
+    }
+
+    private void notifyDelta(float delta) {
+        int hand = delta >= 0 ? 0 : 1;
+        float absoluteDelta = Math.abs(delta);
+        if (absoluteDelta > 80.0) {
+            activateMotor(hand, 0);
+            activateMotor(hand, 1);
+            activateMotor(hand, 2);
+            activateMotor(hand, 3);
+        }
+        else if (absoluteDelta > 60.0) {
+            activateMotor(hand, 2);
+            activateMotor(hand, 3);
+        }
+        else if (absoluteDelta > 40.0) {
+            activateMotor(hand, 3);
+        }
+        else if (absoluteDelta > 20.0) {
+            activateMotor(hand, 2);
+        }
+        else if (absoluteDelta > 10.0) {
+            activateMotor(hand, 1);
+        }
+        else if (absoluteDelta > 5.0) {
+            activateMotor(hand, 0);
+        }
+    }
+
     // Location service
 
     @Override
@@ -369,6 +403,7 @@ public class NavigationService extends Service implements LocationListener {
             //Log.v(TAG, location.toString());
             navigationDistance = location.distanceTo(navigationTarget);
             if (navigationDistance < 5.0) {
+                notifyTargetReached();
                 sendMessage(MSG_NAVIGATION_FINISHED);
             }
             else {
@@ -392,6 +427,7 @@ public class NavigationService extends Service implements LocationListener {
                     Log.v(TAG, "Course: " + course);
                     Log.v(TAG, "Delta: " + delta);
                     navigationDelta = delta;
+                    notifyDelta(delta);
                 }
                 if (locationsIndex >= LOCATIONS_SIZE) {
                     sendMessage(MSG_NAVIGATION_LOCATED);

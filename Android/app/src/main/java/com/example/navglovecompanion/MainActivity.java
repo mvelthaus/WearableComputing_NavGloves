@@ -236,38 +236,6 @@ public class MainActivity extends AppCompatActivity implements NavigationService
     // Bluetooth Methoden
     // TODO Move to service
     /*
-    private void notifyTargetReached() {
-        for (int motor = 0; motor < 4; motor++) {
-            bluetoothService.activateMotor(0, motor);
-            bluetoothService.activateMotor(1, motor);
-        }
-    }
 
-    private void notifyDelta(float delta) {
-        int hand = delta >= 0 ? 0 : 1;
-        float absoluteDelta = Math.abs(delta);
-        if (absoluteDelta > 80.0) {
-            bluetoothService.activateMotor(hand, 0);
-            bluetoothService.activateMotor(hand, 1);
-            bluetoothService.activateMotor(hand, 2);
-            bluetoothService.activateMotor(hand, 3);
-        }
-        else if (absoluteDelta > 60.0) {
-            bluetoothService.activateMotor(hand, 2);
-            bluetoothService.activateMotor(hand, 3);
-        }
-        else if (absoluteDelta > 40.0) {
-            bluetoothService.activateMotor(hand, 3);
-        }
-        else if (absoluteDelta > 20.0) {
-            bluetoothService.activateMotor(hand, 2);
-        }
-        else if (absoluteDelta > 10.0) {
-            bluetoothService.activateMotor(hand, 1);
-        }
-        else if (absoluteDelta > 5.0) {
-            bluetoothService.activateMotor(hand, 0);
-        }
-    }
     */
 }
