@@ -8,9 +8,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -24,9 +21,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements NavigationService.NavigationServiceListener {
     private static final int LOCATION_PERMISSIONS_CHECK_CODE = 23;
@@ -138,13 +132,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
         if (navigationService.getState() > NavigationService.STATE_CONNECTED) {
             navigationService.stopNavigation();
         } else {
-            Location target = parseLocationString(inputField.getText().toString());
-            if (target != null) {
-                navigationService.startNavigation(target);
-            }
-            else {
-                Toast.makeText(this, "The entered text does not describe a valid position", Toast.LENGTH_LONG).show();
-            }
+            navigationService.startNavigation(inputField.getText().toString());
         }
     }
 
@@ -164,24 +152,6 @@ public class MainActivity extends AppCompatActivity implements NavigationService
         }
     }
 
-    private Location parseLocationString(String locationStr) {
-        Pattern p = Pattern.compile("([-+]?\\d*\\.?\\d+)\\D+([-+]?\\d*\\.?\\d+)");
-        Matcher m = p.matcher(locationStr);
-        if (m.find()) {
-            double latitude = Double.parseDouble(m.group(1));
-            double longitude = Double.parseDouble(m.group(2));
-            Log.d(TAG, "Location: " + latitude + ", " + longitude);
-            Location location = new Location(LocationManager.GPS_PROVIDER);
-            location.setLatitude(latitude);
-            location.setLongitude(longitude);
-            return location;
-        }
-        else {
-            Log.d(TAG, "Location string does not match pattern");
-            return null;
-        }
-    }
-
     private void syncUiWithState() {
         if (navigationService == null) {
             Log.w(TAG, "Not connected to navigation service");
@@ -192,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 deltaText.setText("Service has been started.");
                 distanceText.setText("");
                 inputField.setEnabled(true);
+                //inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(false);
                 naviBtn.setText("Start Navigation");
                 break;
@@ -199,6 +170,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 deltaText.setText("Connecting to gloves...");
                 distanceText.setText("");
                 inputField.setEnabled(true);
+                //inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(false);
                 naviBtn.setText("Start Navigation");
                 break;
@@ -206,6 +178,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 deltaText.setText("Ready to navigate.");
                 distanceText.setText("");
                 inputField.setEnabled(true);
+                //inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(true);
                 naviBtn.setText("Start Navigation");
                 break;
@@ -213,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 deltaText.setText("Move 10m into one direction.");
                 distanceText.setText("Distance: " + navigationService.getNavigationDistance());
                 inputField.setEnabled(false);
+                inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(true);
                 naviBtn.setText("Stop Navigation");
                 break;
@@ -220,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 deltaText.setText("Delta: " + navigationService.getNavigationDelta());
                 distanceText.setText("Distance: " + navigationService.getNavigationDistance());
                 inputField.setEnabled(false);
+                inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(true);
                 naviBtn.setText("Stop Navigation");
                 break;
@@ -227,15 +202,10 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 deltaText.setText("Target reached.");
                 distanceText.setText("Distance: " + navigationService.getNavigationDistance());
                 inputField.setEnabled(false);
+                inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(true);
                 naviBtn.setText("Stop Navigation");
                 break;
         }
     }
-
-    // Bluetooth Methoden
-    // TODO Move to service
-    /*
-
-    */
 }

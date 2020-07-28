@@ -21,6 +21,8 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class NavigationService extends Service implements LocationListener {
 
@@ -64,6 +66,7 @@ public class NavigationService extends Service implements LocationListener {
     private int locationsIndex;
     private float navigationDelta;
     private float navigationDistance;
+    private String navigationInput;
     private Location navigationTarget;
     private ArrayList<BluetoothSocket> sockets = new ArrayList<>();
     private int state = STATE_STARTED;;
@@ -116,17 +119,28 @@ public class NavigationService extends Service implements LocationListener {
         return navigationDistance;
     }
 
+    public String getNavigationInput() {
+        return navigationInput;
+    }
+
     public Location getNavigationTarget() {
         return navigationTarget;
     }
 
-    public void startNavigation(Location newTarget) {
-        startForeground(ONGOING_NOTIFICATION_ID, buildNotification());
-        startService(new Intent(getApplicationContext(), NavigationService.class));
-        // TODO allow passing of data along with message
-        navigationTarget = newTarget;
-        sendMessage(MSG_NAVIGATION_STARTED);
-        Log.d(TAG, "Navigation started");
+    public void startNavigation(String input) {
+        Location target = parseInput(input);
+        if (target != null) {
+            startForeground(ONGOING_NOTIFICATION_ID, buildNotification());
+            startService(new Intent(getApplicationContext(), NavigationService.class));
+            // TODO allow passing of data along with message
+            navigationInput = input;
+            navigationTarget = target;
+            sendMessage(MSG_NAVIGATION_STARTED);
+            Log.d(TAG, "Navigation started");
+        }
+        else {
+            Toast.makeText(this, "The entered text does not describe a valid position", Toast.LENGTH_LONG).show();
+        }
     }
 
     public void stopNavigation() {
@@ -151,6 +165,25 @@ public class NavigationService extends Service implements LocationListener {
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(pendingIntent)
             .build();
+    }
+
+
+    private Location parseInput(String input) {
+        Pattern p = Pattern.compile("([-+]?\\d*\\.?\\d+)\\D+([-+]?\\d*\\.?\\d+)");
+        Matcher m = p.matcher(input);
+        if (m.find()) {
+            double latitude = Double.parseDouble(m.group(1));
+            double longitude = Double.parseDouble(m.group(2));
+            Log.d(TAG, "Location: " + latitude + ", " + longitude);
+            Location location = new Location(LocationManager.GPS_PROVIDER);
+            location.setLatitude(latitude);
+            location.setLongitude(longitude);
+            return location;
+        }
+        else {
+            Log.d(TAG, "Location string does not match pattern");
+            return null;
+        }
     }
 
     // State management
