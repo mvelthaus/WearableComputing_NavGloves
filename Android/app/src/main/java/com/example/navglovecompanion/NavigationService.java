@@ -268,9 +268,11 @@ public class NavigationService extends Service implements LocationListener {
                 break;
             case STATE_RUNNING:
                 Log.d(TAG, "STATE_RUNNING");
+                notifyDelta();
                 break;
             case STATE_FINISHED:
                 Log.d(TAG, "STATE_FINISHED");
+                notifyTargetReached();
                 break;
         }
     }
@@ -368,9 +370,9 @@ public class NavigationService extends Service implements LocationListener {
         }
     }
 
-    private void notifyDelta(float delta) {
-        int hand = delta >= 0 ? 0 : 1;
-        float absoluteDelta = Math.abs(delta);
+    private void notifyDelta() {
+        int hand = navigationDelta >= 0 ? 0 : 1;
+        float absoluteDelta = Math.abs(navigationDelta);
         if (absoluteDelta > 80.0) {
             activateMotor(hand, 0);
             activateMotor(hand, 1);
@@ -401,37 +403,33 @@ public class NavigationService extends Service implements LocationListener {
     public void onLocationChanged(Location location) {
         if (state > STATE_CONNECTED) {
             //Log.v(TAG, location.toString());
-            navigationDistance = location.distanceTo(navigationTarget);
-            if (navigationDistance < 5.0) {
-                notifyTargetReached();
-                sendMessage(MSG_NAVIGATION_FINISHED);
+            if (locationsIndex < LOCATIONS_SIZE) {
+                locations[locationsIndex] = location;
+                Log.v(TAG, "Previous location " + locationsIndex + " initialized");
+                locationsIndex++;
+                Log.v(TAG, "Set previous locations index: " + locationsIndex);
             }
             else {
-                if (locationsIndex < LOCATIONS_SIZE) {
-                    locations[locationsIndex] = location;
-                    Log.v(TAG, "Previous location " + locationsIndex + " initialized");
-                    locationsIndex++;
-                    Log.v(TAG, "Set previous locations index: " + locationsIndex);
-                }
-                else {
-                    System.arraycopy(locations, 1, locations, 0, LOCATIONS_SIZE - 1);
-                    locations[LOCATIONS_SIZE - 1] = location;
-                    float bearing = location.bearingTo(navigationTarget);
-                    float course = calculateCourse();
-                    float delta = bearing - course;
-                    if (delta < -180)
-                        delta += 360;
-                    else if (delta > 180)
-                        delta -= 360;
-                    Log.v(TAG, "Bearing: " + bearing);
-                    Log.v(TAG, "Course: " + course);
-                    Log.v(TAG, "Delta: " + delta);
-                    navigationDelta = delta;
-                    notifyDelta(delta);
-                }
-                if (locationsIndex >= LOCATIONS_SIZE) {
-                    sendMessage(MSG_NAVIGATION_LOCATED);
-                }
+                System.arraycopy(locations, 1, locations, 0, LOCATIONS_SIZE - 1);
+                locations[LOCATIONS_SIZE - 1] = location;
+                float bearing = location.bearingTo(navigationTarget);
+                float course = calculateCourse();
+                float delta = bearing - course;
+                if (delta < -180)
+                    delta += 360;
+                else if (delta > 180)
+                    delta -= 360;
+                Log.v(TAG, "Bearing: " + bearing);
+                Log.v(TAG, "Course: " + course);
+                Log.v(TAG, "Delta: " + delta);
+                navigationDelta = delta;
+            }
+            navigationDistance = location.distanceTo(navigationTarget);
+            if (navigationDistance < 5.0) {
+                sendMessage(MSG_NAVIGATION_FINISHED);
+            }
+            else if (locationsIndex >= LOCATIONS_SIZE) {
+                sendMessage(MSG_NAVIGATION_LOCATED);
             }
         }
     }
