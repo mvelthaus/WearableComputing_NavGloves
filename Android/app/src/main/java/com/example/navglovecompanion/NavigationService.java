@@ -203,11 +203,12 @@ public class NavigationService extends Service implements LocationListener {
     private void sendMessage(int msg) {
         try {
             int oldState = state;
-            stopState();
-            state = processMessage(msg);
-            startState();
+            int newState = processMessage(msg);
+            stopState(oldState);
+            startState(newState);
+            state = newState;
             for (NavigationServiceListener listener : listeners)
-                listener.onStateChange(oldState, state);
+                listener.onStateChange(oldState, newState);
         }
         catch (Exception e) {
             Log.e(TAG, "Error while sending message", e);
@@ -281,9 +282,9 @@ public class NavigationService extends Service implements LocationListener {
         }
     }
 
-    private void startState() {
-        Log.d(TAG, "onStateStart: " + state);
-        switch (state) {
+    private void startState(int newState) {
+        Log.d(TAG, "onStateStart: " + newState);
+        switch (newState) {
             case STATE_STARTED:
                 Log.d(TAG, "STATE_STARTED");
                 break;
@@ -310,9 +311,9 @@ public class NavigationService extends Service implements LocationListener {
         }
     }
 
-    private void stopState() {
-        Log.d(TAG, "onStateEnd: " + state);
-        switch (state) {
+    private void stopState(int oldState) {
+        Log.d(TAG, "onStateEnd: " + oldState);
+        switch (oldState) {
             case STATE_STARTED:
                 Log.d(TAG, "STATE_STARTED");
                 break;
