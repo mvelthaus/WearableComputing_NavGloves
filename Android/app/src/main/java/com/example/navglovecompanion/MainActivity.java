@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
     private EditText inputField;
     private TextView deltaText;
     private TextView distanceText;
+    private AlertDialog dialog;
 
     // Service connection handler
 
@@ -159,8 +160,12 @@ public class MainActivity extends AppCompatActivity implements NavigationService
             Log.w(TAG, "Not connected to navigation service");
             return;
         }
+        if (dialog != null) {
+            dialog.cancel();
+            dialog = null;
+        }
         switch (navigationService.getState()) {
-            case NavigationService.STATE_STARTED:
+            case NavigationService.STATE_STARTING:
                 deltaText.setText("Service has been started.");
                 distanceText.setText("");
                 inputField.setEnabled(true);
@@ -208,13 +213,25 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 naviBtn.setEnabled(true);
                 naviBtn.setText("Stop Navigation");
                 break;
+            case NavigationService.STATE_PAUSED:
+                dialog = new AlertDialog.Builder(this)
+                    .setTitle("Navigation Paused")
+                    .setMessage("Please enable GPS and grant permission to access location.")
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            navigationService.sendMessage(NavigationService.MSG_NAVIGATION_DONE);
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+                break;
             case NavigationService.STATE_ERROR:
-                new AlertDialog.Builder(this)
+                dialog = new AlertDialog.Builder(this)
                     .setTitle("Bluetooth Error")
                     .setMessage("Unable to connect to NavGloves.")
                     .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            navigationService.sendMessage(NavigationService.MSG_BLUETOOTH_START);
+                            navigationService.sendMessage(NavigationService.MSG_SERVICE_STARTED);
                         }
                     })
                     .setNegativeButton("Exit", new DialogInterface.OnClickListener() {

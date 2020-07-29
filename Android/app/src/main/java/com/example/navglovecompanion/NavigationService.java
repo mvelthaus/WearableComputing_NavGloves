@@ -37,20 +37,22 @@ public class NavigationService extends Service implements LocationListener {
     }
 
     public static final int STATE_ERROR = -1;
-    public static final int STATE_STARTED = 0;
+    public static final int STATE_STARTING = 0;
     public static final int STATE_CONNECTING = 1;
     public static final int STATE_CONNECTED = 2;
     public static final int STATE_LOCATING = 3;
     public static final int STATE_RUNNING = 4;
     public static final int STATE_FINISHED = 5;
+    public static final int STATE_PAUSED = 6;
 
-    public static final int MSG_BLUETOOTH_START = 0;
-    public static final int MSG_BLUETOOTH_SUCCESS = 1;
+    public static final int MSG_SERVICE_STARTED = 0;
+    public static final int MSG_BLUETOOTH_CONNECTED = 1;
     public static final int MSG_BLUETOOTH_FAILURE = 2;
     public static final int MSG_NAVIGATION_STARTED = 3;
     public static final int MSG_NAVIGATION_LOCATED = 4;
     public static final int MSG_NAVIGATION_FINISHED = 5;
     public static final int MSG_NAVIGATION_DONE = 6;
+    public static final int MSG_NAVIGATION_FAILURE = 7;
 
     private static final String TAG = "NavigationService";
     private static final String NOTIFICATION_CHANNEL_ID = "NAVI";
@@ -70,13 +72,13 @@ public class NavigationService extends Service implements LocationListener {
     private String navigationInput;
     private Location navigationTarget;
     private ArrayList<BluetoothSocket> sockets = new ArrayList<>();
-    private int state = STATE_STARTED;;
+    private int state = STATE_STARTING;;
 
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate");
         super.onCreate();
-        sendMessage(MSG_BLUETOOTH_START);
+        sendMessage(MSG_SERVICE_STARTED);
     }
 
     @Override
@@ -218,16 +220,16 @@ public class NavigationService extends Service implements LocationListener {
 
     private int processMessage(int msg) throws IllegalStateException {
         switch (state) {
-            case STATE_STARTED:
+            case STATE_STARTING:
                 switch (msg) {
-                    case MSG_BLUETOOTH_START:
+                    case MSG_SERVICE_STARTED:
                         return STATE_CONNECTING;
                     default:
                         throw new IllegalStateException("State " + state + " does not know about message: " + msg);
                 }
             case STATE_CONNECTING:
                 switch (msg) {
-                    case MSG_BLUETOOTH_SUCCESS:
+                    case MSG_BLUETOOTH_CONNECTED:
                         return STATE_CONNECTED;
                     case MSG_BLUETOOTH_FAILURE:
                         return STATE_ERROR;
@@ -240,6 +242,8 @@ public class NavigationService extends Service implements LocationListener {
                         return STATE_LOCATING;
                     case MSG_BLUETOOTH_FAILURE:
                         return STATE_ERROR;
+                    case MSG_NAVIGATION_FAILURE:
+                        return STATE_CONNECTED;
                     default:
                         throw new IllegalStateException("State " + state + " does not know about message: " + msg);
                 }
@@ -253,6 +257,8 @@ public class NavigationService extends Service implements LocationListener {
                         return STATE_FINISHED;
                     case MSG_NAVIGATION_DONE:
                         return STATE_CONNECTED;
+                    case MSG_NAVIGATION_FAILURE:
+                        return STATE_PAUSED;
                     default:
                         throw new IllegalStateException("State " + state + " does not know about message: " + msg);
                 }
@@ -264,6 +270,8 @@ public class NavigationService extends Service implements LocationListener {
                         return STATE_FINISHED;
                     case MSG_NAVIGATION_DONE:
                         return STATE_CONNECTED;
+                    case MSG_NAVIGATION_FAILURE:
+                        return STATE_PAUSED;
                     case MSG_BLUETOOTH_FAILURE:
                         return STATE_ERROR;
                     default:
@@ -277,14 +285,29 @@ public class NavigationService extends Service implements LocationListener {
                         return STATE_RUNNING;
                     case MSG_NAVIGATION_DONE:
                         return STATE_CONNECTED;
+                    case MSG_NAVIGATION_FAILURE:
+                        return STATE_PAUSED;
                     case MSG_BLUETOOTH_FAILURE:
                         return STATE_ERROR;
                     default:
                         throw new IllegalStateException("State " + state + " does not know about message: " + msg);
                 }
+            case STATE_PAUSED:
+                switch (msg) {
+                    case MSG_NAVIGATION_STARTED:
+                        return STATE_LOCATING;
+                    case MSG_NAVIGATION_LOCATED:
+                        return STATE_RUNNING;
+                    case MSG_NAVIGATION_FINISHED:
+                        return STATE_FINISHED;
+                    case MSG_NAVIGATION_DONE:
+                        return STATE_CONNECTED;
+                    default:
+                        throw new IllegalStateException("State " + state + " does not know about message: " + msg);
+                }
             case STATE_ERROR:
                 switch (msg) {
-                    case MSG_BLUETOOTH_START:
+                    case MSG_SERVICE_STARTED:
                         return STATE_CONNECTING;
                     default:
                         throw new IllegalStateException("State " + state + " does not know about message: " + msg);
@@ -297,7 +320,7 @@ public class NavigationService extends Service implements LocationListener {
     private void startState(int newState) {
         Log.d(TAG, "onStateStart: " + newState);
         switch (newState) {
-            case STATE_STARTED:
+            case STATE_STARTING:
                 Log.d(TAG, "STATE_STARTED");
                 break;
             case STATE_CONNECTING:
@@ -321,6 +344,9 @@ public class NavigationService extends Service implements LocationListener {
                 Log.d(TAG, "STATE_FINISHED");
                 notifyTargetReached();
                 break;
+            case STATE_PAUSED:
+                Log.d(TAG, "STATE_PAUSED");
+                break;
             case STATE_ERROR:
                 Log.d(TAG, "STATE_ERROR");
                 stopBluetooth();
@@ -331,7 +357,7 @@ public class NavigationService extends Service implements LocationListener {
     private void stopState(int oldState) {
         Log.d(TAG, "onStateEnd: " + oldState);
         switch (oldState) {
-            case STATE_STARTED:
+            case STATE_STARTING:
                 Log.d(TAG, "STATE_STARTED");
                 break;
             case STATE_CONNECTING:
@@ -349,6 +375,12 @@ public class NavigationService extends Service implements LocationListener {
             case STATE_FINISHED:
                 Log.d(TAG, "STATE_FINISHED");
                 break;
+            case STATE_PAUSED:
+                Log.d(TAG, "STATE_PAUSED");
+                break;
+            case STATE_ERROR:
+                Log.d(TAG, "STATE_ERROR");
+                break;
         }
     }
 
@@ -360,7 +392,7 @@ public class NavigationService extends Service implements LocationListener {
             @Override
             public void run() {
                 /* Uncomment to skip Bluetooth
-                sendMessage(MSG_BLUETOOTH_SUCCESS);
+                sendMessage(MSG_BLUETOOTH_CONNECTED);
                 //*/
                 //*
                 try {
@@ -372,7 +404,7 @@ public class NavigationService extends Service implements LocationListener {
                         sockets.add(bluetoothSocket);
                         Log.d(TAG, "Connected to glove: " + macAddress);
                     }
-                    sendMessage(MSG_BLUETOOTH_SUCCESS);
+                    sendMessage(MSG_BLUETOOTH_CONNECTED);
                 } catch (Exception e) {
                     Log.e(TAG, "Unable to connect to glove", e);
                     sendMessage(MSG_BLUETOOTH_FAILURE);
@@ -495,17 +527,14 @@ public class NavigationService extends Service implements LocationListener {
     @Override
     public void onProviderEnabled(String provider) {
         Log.d(TAG, "Provider enabled: " + provider);
-        if (provider.equals(LocationManager.GPS_PROVIDER)) {
-            Toast.makeText(this, "GPS has been enabled, tracking resumed.", Toast.LENGTH_LONG).show();
-        }
+        // Nothing more to do here
     }
 
     @Override
     public void onProviderDisabled(String provider) {
         Log.d(TAG, "Provider disabled: " + provider);
-        if (provider.equals(LocationManager.GPS_PROVIDER)) {
-            Toast.makeText(this, "GPS has been disabled, tracking paused.", Toast.LENGTH_LONG).show();
-        }
+        if (provider.equals(LocationManager.GPS_PROVIDER))
+            sendMessage(MSG_NAVIGATION_FAILURE);
     }
 
     private float calculateCourse() {
@@ -554,19 +583,17 @@ public class NavigationService extends Service implements LocationListener {
                     }
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1, this);
                 } else {
-                    // TODO Go back to connected state
-                    // TODO Introduce bluetooth-error state
-                    Toast.makeText(this, "GPS has to be enabled to track your position.", Toast.LENGTH_LONG).show();
+                    Log.w(TAG, "GPS provider is not enabled");
+                    sendMessage(MSG_NAVIGATION_FAILURE);
                 }
             }
             else {
-                Log.d(TAG, "No location manager");
+                Log.w(TAG, "No location manager");
+                sendMessage(MSG_NAVIGATION_FAILURE);
             }
         } catch (SecurityException e) {
-            // TODO Go back to connected state
-            // TODO Introduce location-error message & state
-            Toast.makeText(this, "Location permissions are required to track your position.", Toast.LENGTH_LONG).show();
-            sendMessage(MSG_BLUETOOTH_FAILURE);
+            Log.w(TAG, "No permission to use GPS");
+            sendMessage(MSG_NAVIGATION_FAILURE);
         }
     }
 
