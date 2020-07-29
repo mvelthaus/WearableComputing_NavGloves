@@ -201,6 +201,7 @@ public class NavigationService extends Service implements LocationListener {
     }
 
     public void sendMessage(int msg) {
+        Log.d(TAG, "sendMessage: " + msg);
         try {
             int oldState = state;
             int newState = processMessage(msg);
@@ -244,21 +245,25 @@ public class NavigationService extends Service implements LocationListener {
                 }
             case STATE_LOCATING:
                 switch (msg) {
-                    case MSG_NAVIGATION_DONE:
-                        return STATE_CONNECTED;
+                    case MSG_NAVIGATION_STARTED: // trigger updates during navigation
+                        return STATE_LOCATING;
                     case MSG_NAVIGATION_LOCATED:
                         return STATE_RUNNING;
+                    case MSG_NAVIGATION_FINISHED:
+                        return STATE_FINISHED;
+                    case MSG_NAVIGATION_DONE:
+                        return STATE_CONNECTED;
                     default:
                         throw new IllegalStateException("State " + state + " does not know about message: " + msg);
                 }
             case STATE_RUNNING:
                 switch (msg) {
-                    case MSG_NAVIGATION_LOCATED: // used for updates during navigation
+                    case MSG_NAVIGATION_LOCATED: // trigger updates during navigation
                         return STATE_RUNNING;
-                    case MSG_NAVIGATION_DONE:
-                        return STATE_CONNECTED;
                     case MSG_NAVIGATION_FINISHED:
                         return STATE_FINISHED;
+                    case MSG_NAVIGATION_DONE:
+                        return STATE_CONNECTED;
                     case MSG_BLUETOOTH_FAILURE:
                         return STATE_ERROR;
                     default:
@@ -266,9 +271,9 @@ public class NavigationService extends Service implements LocationListener {
                 }
             case STATE_FINISHED:
                 switch (msg) {
-                    case MSG_NAVIGATION_FINISHED: // used for updates during navigation
+                    case MSG_NAVIGATION_FINISHED: // trigger updates during navigation
                         return STATE_FINISHED;
-                    case MSG_NAVIGATION_LOCATED: // used for updates during navigation
+                    case MSG_NAVIGATION_LOCATED: // jump back, if user moves beyond target
                         return STATE_RUNNING;
                     case MSG_NAVIGATION_DONE:
                         return STATE_CONNECTED;
@@ -305,7 +310,8 @@ public class NavigationService extends Service implements LocationListener {
                 break;
             case STATE_LOCATING:
                 Log.d(TAG, "STATE_LOCATING");
-                startLocation();
+                if (state != STATE_LOCATING)
+                    startLocation();
                 break;
             case STATE_RUNNING:
                 Log.d(TAG, "STATE_RUNNING");
@@ -444,7 +450,7 @@ public class NavigationService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        //Log.v(TAG, location.toString());
+        Log.v(TAG, location.toString());
         if (locationsIndex < LOCATIONS_SIZE) {
             locations[locationsIndex] = location;
             Log.v(TAG, "Previous location " + locationsIndex + " initialized");
@@ -471,7 +477,10 @@ public class NavigationService extends Service implements LocationListener {
             if (navigationDistance < 5.0) {
                 sendMessage(MSG_NAVIGATION_FINISHED);
             }
-            else if (locationsIndex >= LOCATIONS_SIZE) {
+            else if (locationsIndex < LOCATIONS_SIZE) {
+                sendMessage(MSG_NAVIGATION_STARTED);
+            }
+            else {
                 sendMessage(MSG_NAVIGATION_LOCATED);
             }
         }
