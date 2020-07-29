@@ -2,8 +2,10 @@ package com.example.navglovecompanion;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
@@ -205,6 +207,23 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(true);
                 naviBtn.setText("Stop Navigation");
+                break;
+            case NavigationService.STATE_ERROR:
+                new AlertDialog.Builder(this)
+                    .setTitle("Bluetooth Error")
+                    .setMessage("Unable to connect to NavGloves.")
+                    .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            navigationService.sendMessage(NavigationService.MSG_BLUETOOTH_START);
+                        }
+                    })
+                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            finishAndRemoveTask();
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
                 break;
         }
     }
