@@ -133,9 +133,11 @@ public class MainActivity extends AppCompatActivity implements NavigationService
 
     public void onNaviClick(View v) {
         if (navigationService.getState() > NavigationService.STATE_CONNECTED) {
-            navigationService.stopNavigation();
+            navigationService.sendMessage(NavigationService.MSG_STOP_NAVIGATION);
         } else {
-            navigationService.startNavigation(inputField.getText().toString());
+            // TODO allow passing of data along with message
+            navigationService.setNavigationInput(inputField.getText().toString());
+            navigationService.sendMessage(NavigationService.MSG_START_NAVIGATION);
         }
     }
 
@@ -165,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
             dialog = null;
         }
         switch (navigationService.getState()) {
-            case NavigationService.STATE_STARTING:
+            case NavigationService.STATE_CREATED:
                 deltaText.setText("Service has been started.");
                 distanceText.setText("");
                 inputField.setEnabled(true);
@@ -189,15 +191,15 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 naviBtn.setEnabled(true);
                 naviBtn.setText("Start Navigation");
                 break;
-            case NavigationService.STATE_LOCATING:
-                deltaText.setText("Move 10m into one direction.");
+            case NavigationService.STATE_STARTING:
+                deltaText.setText("Start walking into one direction...");
                 distanceText.setText("Distance: " + navigationService.getNavigationDistance());
                 inputField.setEnabled(false);
                 inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(true);
                 naviBtn.setText("Stop Navigation");
                 break;
-            case NavigationService.STATE_RUNNING:
+            case NavigationService.STATE_LOCATING:
                 deltaText.setText("Delta: " + navigationService.getNavigationDelta());
                 distanceText.setText("Distance: " + navigationService.getNavigationDistance());
                 inputField.setEnabled(false);
@@ -217,9 +219,14 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 dialog = new AlertDialog.Builder(this)
                     .setTitle("Navigation Paused")
                     .setMessage("Please enable GPS and grant permission to access location.")
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    .setPositiveButton("Resume", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            navigationService.sendMessage(NavigationService.MSG_NAVIGATION_DONE);
+                            navigationService.sendMessage(NavigationService.MSG_START_NAVIGATION);
+                        }
+                    })
+                    .setNegativeButton("Stop", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            navigationService.sendMessage(NavigationService.MSG_STOP_NAVIGATION);
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_alert)
@@ -231,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                     .setMessage("Unable to connect to NavGloves.")
                     .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            navigationService.sendMessage(NavigationService.MSG_SERVICE_STARTED);
+                            navigationService.sendMessage(NavigationService.MSG_START_BLUETOOTH);
                         }
                     })
                     .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
