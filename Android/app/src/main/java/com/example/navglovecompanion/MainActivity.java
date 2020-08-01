@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 naviBtn.setText("Stop Navigation");
                 break;
             case NavigationService.STATE_LOCATING:
-                deltaText.setText("Delta: " + navigationService.getNavigationDelta());
+                deltaText.setText("" + navigationService.getNavigationDeltaLocation() + " (" + navigationService.getNavigationCourseLocation() + ")\n " + navigationService.getNavigationDeltaBearing() + " (" + navigationService.getNavigationCourseBearing() + ")");
                 distanceText.setText("Distance: " + navigationService.getNavigationDistance());
                 inputField.setEnabled(false);
                 inputField.setText(navigationService.getNavigationInput());

@@ -69,7 +69,10 @@ public class NavigationService extends Service implements LocationListener {
     private ArrayList<NavigationServiceListener> listeners = new ArrayList<>();
     private Location[] locations;
     private int locationsIndex;
-    private float navigationDelta;
+    private float navigationCourseBearing;
+    private float navigationCourseLocation;
+    private float navigationDeltaBearing;
+    private float navigationDeltaLocation;
     private float navigationDistance;
     private String navigationInput;
     private Location navigationTarget;
@@ -116,8 +119,20 @@ public class NavigationService extends Service implements LocationListener {
 
     // Getter & setter
 
-    public float getNavigationDelta() {
-        return navigationDelta;
+    public float getNavigationCourseBearing() {
+        return navigationCourseBearing;
+    }
+
+    public float getNavigationCourseLocation() {
+        return navigationCourseLocation;
+    }
+
+    public float getNavigationDeltaBearing() {
+        return navigationDeltaBearing;
+    }
+
+    public float getNavigationDeltaLocation() {
+        return navigationDeltaLocation;
     }
 
     public float getNavigationDistance() {
@@ -425,8 +440,8 @@ public class NavigationService extends Service implements LocationListener {
     }
 
     private void notifyDelta() {
-        int hand = navigationDelta >= 0 ? 0 : 1;
-        float absoluteDelta = Math.abs(navigationDelta);
+        int hand = navigationDeltaLocation >= 0 ? 0 : 1;
+        float absoluteDelta = Math.abs(navigationDeltaLocation);
         if (absoluteDelta > 80.0) {
             activateMotor(hand, 0);
             activateMotor(hand, 1);
@@ -466,16 +481,21 @@ public class NavigationService extends Service implements LocationListener {
             System.arraycopy(locations, 1, locations, 0, LOCATIONS_SIZE - 1);
             locations[LOCATIONS_SIZE - 1] = location;
             float bearing = location.bearingTo(navigationTarget);
-            float course = calculateCourse();
-            float delta = bearing - course;
-            if (delta < -180)
-                delta += 360;
-            else if (delta > 180)
-                delta -= 360;
             Log.v(TAG, "Bearing: " + bearing);
-            Log.v(TAG, "Course: " + course);
-            Log.v(TAG, "Delta: " + delta);
-            navigationDelta = delta;
+
+            float courseLocation = calculateCourseLocation();
+            float deltaLocation = normalizeDelta(bearing - courseLocation);
+            Log.v(TAG, "CourseLocation: " + courseLocation);
+            Log.v(TAG, "DeltaLocation: " + deltaLocation);
+            navigationCourseLocation = courseLocation;
+            navigationDeltaLocation = deltaLocation;
+
+            float courseBearing = calculateCourseBearing();
+            float deltaBearing = normalizeDelta(bearing - courseBearing);
+            Log.v(TAG, "CourseBearing: " + courseBearing);
+            Log.v(TAG, "DeltaBearing: " + deltaBearing);
+            navigationCourseBearing = courseBearing;
+            navigationDeltaBearing = deltaBearing;
         }
         navigationDistance = location.distanceTo(navigationTarget);
         if (state > STATE_CONNECTED) {
@@ -511,7 +531,16 @@ public class NavigationService extends Service implements LocationListener {
         }
     }
 
-    private float calculateCourse() {
+    private float normalizeDelta(float delta) {
+        if (delta < -180)
+            return delta + 360;
+        else if (delta > 180)
+            return delta - 360;
+        else
+            return delta;
+    }
+
+    private float calculateCourseLocation() {
         float distSum = 0;
         float courseSum = 0;
         float courseSum_ = 0;
@@ -521,26 +550,71 @@ public class NavigationService extends Service implements LocationListener {
         float diffSum_ = 0;
         for (int i = 0; i < LOCATIONS_SIZE; i++) {
             for (int j = i + 1; j < LOCATIONS_SIZE; j++) {
-                float d = (float) Math.pow(locations[i].distanceTo(locations[j]), 2);
-                float c = locations[i].bearingTo(locations[j]);
-                float c_ = c < 0 ? c + 360 : c;
-                distSum += d;
-                courseSum += c * d;
-                courseSum_ += c_ * d;
-                if (i + j > 0) {
-                    diffSum += Math.pow(coursePrev - c, 2);
-                    diffSum_ += Math.pow(coursePrev_ - c_, 2);
+                float a = (locations[i].getAccuracy() + locations[j].getAccuracy()) / 2;
+                //float a = 5;
+                float d = locations[i].distanceTo(locations[j]);
+                if (d > a) {
+                    float c = locations[i].bearingTo(locations[j]);
+                    float c_ = c < 0 ? c + 360 : c;
+                    distSum += d;
+                    courseSum += c * d;
+                    courseSum_ += c_ * d;
+                    if (i + j > 0) {
+                        diffSum += Math.pow(coursePrev - c, 2);
+                        diffSum_ += Math.pow(coursePrev_ - c_, 2);
+                    }
+                    coursePrev = c;
+                    coursePrev_ = c_;
                 }
-                coursePrev = c;
-                coursePrev_ = c_;
             }
         }
         float course = courseSum/distSum;
         float course_ = courseSum_/distSum;
         if (course_ > 180)
             course_ -= 360;
-        Log.v(TAG, "Diff:   " + diffSum + " \\ " + diffSum_);
-        Log.v(TAG, "Course: " + course + " \\ " + course_);
+        Log.v(TAG, "DiffLocation:   " + diffSum + " \\ " + diffSum_);
+        Log.v(TAG, "CourseLocation: " + course + " \\ " + course_);
+        return diffSum < diffSum_? course : course_;
+    }
+
+    private float calculateCourseBearing() {
+        float distSum = 0;
+        float courseSum = 0;
+        float courseSum_ = 0;
+        float coursePrev = 0;
+        float coursePrev_ = 0;
+        float diffSum = 0;
+        float diffSum_ = 0;
+        for (int i = 0; i < LOCATIONS_SIZE; i++) {
+            if (locations[i].hasBearing()) { // Invert for debugging
+                // Use the bearing accuracy as weight and the horizontal accuracy as (lesser weighted) a backup
+                float d = 10 - locations[i].getBearingAccuracyDegrees();
+                if (d == 10)
+                    d = (10 - locations[i].getAccuracy()) / 2;
+                    //d = 2.5f; // For debugging
+                if (d > 0) {
+                    //float c = locations[i-1].bearingTo(locations[i]); // For debugging
+                    float c = locations[i].getBearing();
+                    c = c > 180 ? c - 360 : c;
+                    float c_ = c < 0 ? c + 360 : c;
+                    distSum += d;
+                    courseSum += c * d;
+                    courseSum_ += c_ * d;
+                    if (i > 1) {
+                        diffSum += Math.pow(coursePrev - c, 2);
+                        diffSum_ += Math.pow(coursePrev_ - c_, 2);
+                    }
+                    coursePrev = c;
+                    coursePrev_ = c_;
+                }
+            }
+        }
+        float course = courseSum/distSum;
+        float course_ = courseSum_/distSum;
+        if (course_ > 180)
+            course_ -= 360;
+        Log.v(TAG, "DiffLocation:   " + diffSum + " \\ " + diffSum_);
+        Log.v(TAG, "CourseLocation: " + course + " \\ " + course_);
         return diffSum < diffSum_? course : course_;
     }
 
@@ -549,13 +623,7 @@ public class NavigationService extends Service implements LocationListener {
             LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
             if (locationManager != null) {
                 if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    /*Location lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (lastLocation != null) {
-                        onLocationChanged(lastLocation);
-                    } else {
-                        Log.d(TAG, "No last known position");
-                    }*/
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1, this);
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, this);
                     sendMessage(MSG_NAVIGATION_STARTED);
                 } else {
                     Log.w(TAG, "GPS provider is not enabled");
@@ -579,7 +647,7 @@ public class NavigationService extends Service implements LocationListener {
         else
             Log.d(TAG, "No location manager");
         navigationTarget = null;
-        navigationDelta = 0;
+        navigationDeltaLocation = 0;
         locationsIndex = 0;
         locations = new Location[LOCATIONS_SIZE];
     }
