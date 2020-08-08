@@ -416,7 +416,8 @@ public class NavigationService extends Service implements LocationListener {
         sockets.clear();
     }
 
-    private void activateMotor(final int hand, final int motor) {
+    // Public to allow debugging
+    public void activateMotor(final int hand, final int motor) {
         Log.d(TAG, "activateMotor: " + motor + ", " + hand);
         new Thread(new Runnable() {
             @Override

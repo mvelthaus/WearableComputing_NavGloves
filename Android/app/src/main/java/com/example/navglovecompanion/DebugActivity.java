@@ -27,10 +27,11 @@ import java.util.List;
 import java.util.UUID;
 
 public class DebugActivity extends AppCompatActivity {
-    private static final String TAG = "DebugActivity";
+    private static final int LOCATION_PERMISSIONS_CHECK_CODE = 23;
     private static final int BLUETOOTH_PERMISSION_CHECK_CODE = 24;
+    private static final String TAG = "DebugActivity";
 
-    private BluetoothService bluetoothService = null;
+    private NavigationService navigationService = null;
     private Switch switch0;
     private Switch switch1;
     private Switch switch2;
@@ -38,17 +39,20 @@ public class DebugActivity extends AppCompatActivity {
 
     // Service connection handler
 
-    private final ServiceConnection connection = new ServiceConnection() {
+    private final ServiceConnection navigationConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder binder) {
-            bluetoothService = ((BluetoothService.BluetoothServiceBinder) binder).getService();
+            navigationService = ((NavigationService.NavigationServiceBinder) binder).getService();
+            Toast.makeText(DebugActivity.this, "Conneted to service", Toast.LENGTH_SHORT);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName className) {
-            bluetoothService = null;
+            navigationService = null;
         }
     };
+
+    // Lifecycle hooks
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,62 +68,68 @@ public class DebugActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH}, BLUETOOTH_PERMISSION_CHECK_CODE);
-        } else {
-            bindBluetoothService();
+        boolean isBluetoothAllowed = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED;
+        boolean isLocationAllowed = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        if (isBluetoothAllowed && isLocationAllowed) {
+            bindNavigationService();
+        }
+        else {
+            if (!isBluetoothAllowed)
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH}, BLUETOOTH_PERMISSION_CHECK_CODE);
+            if (!isLocationAllowed)
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSIONS_CHECK_CODE);
         }
     }
 
     @Override
     protected void onStop() {
-        if (bluetoothService != null) {
-            unbindService(connection);
-            bluetoothService = null;
-        }
         super.onStop();
+
+        if (navigationService != null) {
+            unbindService(navigationConnection);
+            navigationService = null;
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == BLUETOOTH_PERMISSION_CHECK_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                bindBluetoothService();
-            } else {
-                Toast.makeText(this, "Bluetooth permissions are required.", Toast.LENGTH_LONG).show();
-            }
-        }
+        if (requestCode == LOCATION_PERMISSIONS_CHECK_CODE && grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED)
+            Toast.makeText(this, "Error: Location permissions are required.", Toast.LENGTH_LONG).show();
+        if (requestCode == BLUETOOTH_PERMISSION_CHECK_CODE && grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED)
+            Toast.makeText(this, "Error: Bluetooth permissions are required.", Toast.LENGTH_LONG).show();
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED)
+            && (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED))
+            bindNavigationService();
     }
 
     // Event Methoden
 
     public void onSendClick(View view) {
         if (switch0.isChecked()) {
-            bluetoothService.activateMotor(0, 0);
-            bluetoothService.activateMotor(1, 0);
+            navigationService.activateMotor(0, 0);
+            navigationService.activateMotor(1, 0);
         }
         if (switch1.isChecked()) {
-            bluetoothService.activateMotor(0, 1);
-            bluetoothService.activateMotor(1, 1);
+            navigationService.activateMotor(0, 1);
+            navigationService.activateMotor(1, 1);
         }
         if (switch2.isChecked()) {
-            bluetoothService.activateMotor(0, 2);
-            bluetoothService.activateMotor(1, 2);
+            navigationService.activateMotor(0, 2);
+            navigationService.activateMotor(1, 2);
         }
         if (switch3.isChecked()) {
-            bluetoothService.activateMotor(0, 3);
-            bluetoothService.activateMotor(1, 3);
+            navigationService.activateMotor(0, 3);
+            navigationService.activateMotor(1, 3);
         }
     }
 
-    // Bluetooth Methoden
+    // Helper methods
 
-
-    private void bindBluetoothService() {
-        if (bluetoothService == null) {
-            Intent intent = new Intent(this, BluetoothService.class);
-            if (!bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
-                Toast.makeText(this, "Binding to Bluetooth service failed", Toast.LENGTH_LONG).show();
+    private void bindNavigationService() {
+        if (navigationService == null) {
+            Intent intent = new Intent(this, NavigationService.class);
+            if (!bindService(intent, navigationConnection, Context.BIND_AUTO_CREATE)) {
+                Toast.makeText(this, "Binding to navigation service failed", Toast.LENGTH_LONG).show();
             }
         }
     }
