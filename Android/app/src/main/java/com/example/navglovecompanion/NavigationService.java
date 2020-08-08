@@ -452,8 +452,8 @@ public class NavigationService extends Service implements LocationListener {
     }
 
     private void notifyDelta() {
-        int hand = navigationDeltaLocation >= 0 ? 0 : 1;
-        float absoluteDelta = Math.abs(navigationDeltaLocation);
+        int hand = navigationDeltaBearing >= 0 ? 0 : 1;
+        float absoluteDelta = Math.abs(navigationDeltaBearing);
         if (absoluteDelta > 80.0) {
             activateMotor(hand, 0);
             activateMotor(hand, 1);
