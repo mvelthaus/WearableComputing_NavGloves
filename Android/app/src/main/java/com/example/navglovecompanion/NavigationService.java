@@ -24,6 +24,8 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.lang.Float.NaN;
+
 public class NavigationService extends Service implements LocationListener {
 
     class NavigationServiceBinder extends Binder {
@@ -74,6 +76,7 @@ public class NavigationService extends Service implements LocationListener {
     private float navigationDeltaBearing;
     private float navigationDeltaLocation;
     private float navigationDistance;
+    private float navigationWalked = NaN;
     private String navigationInput;
     private Location navigationTarget;
     private ArrayList<BluetoothSocket> sockets = new ArrayList<>();
@@ -147,6 +150,11 @@ public class NavigationService extends Service implements LocationListener {
         return navigationTarget;
     }
 
+    public float getNavigationWalked()
+    {
+        return Math.abs(navigationWalked);
+    }
+
     public void setNavigationInput(String input) {
         navigationInput = input;
     }
@@ -160,6 +168,7 @@ public class NavigationService extends Service implements LocationListener {
             startService(new Intent(getApplicationContext(), NavigationService.class));
             // TODO allow passing of data along with message
             navigationTarget = target;
+            navigationWalked = 0;
             Log.d(TAG, "Navigation started");
         }
         else {
@@ -360,6 +369,8 @@ public class NavigationService extends Service implements LocationListener {
                 break;
             case STATE_FINISHED:
                 Log.d(TAG, "STATE_FINISHED");
+                if (navigationWalked >= 0) // a negative value indicates, that the distance has been locked
+                    navigationWalked = -navigationWalked;
                 notifyTargetReached();
                 break;
             case STATE_PAUSED:
@@ -499,6 +510,8 @@ public class NavigationService extends Service implements LocationListener {
             navigationDeltaBearing = deltaBearing;
         }
         navigationDistance = location.distanceTo(navigationTarget);
+        if (locationsIndex > 1 && navigationWalked >= 0) // a negative value indicates, that the distance has been locked
+            navigationWalked += location.distanceTo(locations[locationsIndex - 2]);
         if (state > STATE_CONNECTED) {
             if (navigationDistance < 5.0) {
                 sendMessage(MSG_NAVIGATION_FINISHED);

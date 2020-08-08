@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 break;
             case NavigationService.STATE_CONNECTED:
                 deltaText.setText("Ready to navigate.");
-                distanceText.setText("");
+                distanceText.setText("Last walked: " + navigationService.getNavigationWalked() + "m");
                 inputField.setEnabled(true);
                 //inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(true);
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 break;
             case NavigationService.STATE_STARTING:
                 deltaText.setText("Start walking into one direction...");
-                distanceText.setText("Distance: " + navigationService.getNavigationDistance());
+                distanceText.setText("Distance: " + navigationService.getNavigationDistance() + "m (" + navigationService.getNavigationWalked() + " m)");
                 inputField.setEnabled(false);
                 inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(true);
@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 break;
             case NavigationService.STATE_LOCATING:
                 deltaText.setText("" + navigationService.getNavigationDeltaLocation() + " (" + navigationService.getNavigationCourseLocation() + ")\n " + navigationService.getNavigationDeltaBearing() + " (" + navigationService.getNavigationCourseBearing() + ")");
-                distanceText.setText("Distance: " + navigationService.getNavigationDistance());
+                distanceText.setText("Distance: " + navigationService.getNavigationDistance() + "m (" + navigationService.getNavigationWalked() + " m)");
                 inputField.setEnabled(false);
                 inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(true);
@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements NavigationService
                 break;
             case NavigationService.STATE_FINISHED:
                 deltaText.setText("Target reached.");
-                distanceText.setText("Distance: " + navigationService.getNavigationDistance());
+                distanceText.setText("Distance: " + navigationService.getNavigationDistance() + "m (" + navigationService.getNavigationWalked() + " m)");
                 inputField.setEnabled(false);
                 inputField.setText(navigationService.getNavigationInput());
                 naviBtn.setEnabled(true);
