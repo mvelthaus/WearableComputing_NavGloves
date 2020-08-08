@@ -19,9 +19,14 @@ void setup()
   Serial.begin(BAUD_RATE);
   Serial1.begin(BAUD_RATE);
 
+  while (!Serial && !Serial1) {
+    ; // wait for serial ports to connect
+  }
+
   for (int i = 0; i < PINS; i++)
   {
     pinMode(pins[i], OUTPUT);
+    digitalWrite(pins[i], LOW);
   }
 }
 
