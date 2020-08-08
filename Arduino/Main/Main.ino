@@ -3,8 +3,8 @@
 // Bluetooth-Modul mit TX -> RX und TX -> RX verbinden
 int pins[] = {12, 6, 9, 10};
 const int PINS = 4;
-const int VIBRATE_COUNT = 3;
-const int VIBRATE_DELAY = 300;
+const int VIBRATE_COUNT = 1;
+const int VIBRATE_DELAY = 500;
 
 const int RX_PIN = 0;
 const int TX_PIN = 1;
