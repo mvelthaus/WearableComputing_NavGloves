@@ -1,0 +1,67 @@
+#Press #ReleaseSection .Text .Summary {
+    font-size: 1.125em;
+}
+
+#Press #MaterialsSection .Group .Text,
+#Press #VoicesSection .Group .Text {
+    -webkit-flex: 1 1 15em;
+    flex: 1 1 15em;
+    min-width: 15em;
+    max-width: 20em;
+}
+
+#Press #MaterialsSection .Link {
+    -webkit-align-items: center;
+    -webkit-flex-wrap: nowrap;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding: 2.5vh 2.5vw;
+    text-align: left;
+}
+#Press #MaterialsSection .Link>* {
+    padding: 0;
+}
+
+#Press #MaterialsSection .Link a[href] {
+    color: #f16b53;
+}
+
+#Press #MaterialsSection .Link img {
+    width: 4em;
+    height: 4em;
+    padding-right: 1em;
+}
+
+#Press #ContactSection img {
+    width: 6em;
+    height: 6em;
+}
+
+#Press #ContactSection {
+    background: #f16b53;
+    color: #fffdf5;
+    cursor: pointer;
+}
+
+#Press #ContactSection .Group {
+    transform: scale(1);
+    -webkit-transition: transform 500ms ease;
+    transition: transform 500ms ease;
+}
+#Press #ContactSection:hover .Group {
+    transform: scale(1.125);
+}
+
+#Press #ContactSection a:hover {
+    color: inherit;
+}
+
+#Press #ContactSection strong {
+    font-size: 2em;
+    vertical-align: middle;
+}
+
+#Press #ContactSection img {
+    width: 5em;
+    height: 5em;
+}

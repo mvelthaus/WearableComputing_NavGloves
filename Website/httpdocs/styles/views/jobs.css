@@ -1,0 +1,33 @@
+#Jobs #ContactSection img {
+    width: 6em;
+    height: 6em;
+}
+
+#Jobs #ContactSection {
+    background: #f16b53;
+    color: #fffdf5;
+    cursor: pointer;
+}
+
+#Jobs #ContactSection .Group {
+    transform: scale(1);
+    -webkit-transition: transform 500ms ease;
+    transition: transform 500ms ease;
+}
+#Jobs #ContactSection:hover .Group {
+    transform: scale(1.125);
+}
+
+#Jobs #ContactSection a:hover {
+    color: inherit;
+}
+
+#Jobs #ContactSection strong {
+    font-size: 2em;
+    vertical-align: middle;
+}
+
+#Jobs #ContactSection img {
+    width: 5em;
+    height: 5em;
+}

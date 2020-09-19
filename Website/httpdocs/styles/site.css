@@ -1,0 +1,134 @@
+/* INFO Layout */
+
+.View>.Page>.Primary {
+    text-align: center;
+    padding: 5vh 5vw;
+}
+
+.View>.Page>.Primary>.Top {
+    display: -webkit-flex;
+    -webkit-justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
+    color: #444440;
+}
+
+.View>.Page>.Primary>.Top .Logo {
+    font-size: 4em;
+}
+
+.View>.Page>.Primary>.Top nav {
+    text-align: right;
+}
+
+.View>.Page>.Primary>.Top nav li {
+    display: inline-block;
+    list-style: none;
+    margin: 0 0 0.5em 1em;
+    font-size: 1.125em;
+}
+
+.View>.Page>.Primary>.Top nav .Social li {
+    margin-left: 0.5em;
+}
+
+.View>.Page>.Primary>.Top nav a:after {
+    font-size: 1.5em;
+}
+
+.View>.Page>.Primary>.Center {
+  color: #444440;
+}
+
+.View>.Page>.Primary>.Center h2 {
+    max-width: 20em;
+    font-size: 3em;
+    margin: -15% auto 0 auto;
+}
+
+.View>.Page>.Primary>.Center p {
+    font-size: 1.25em;	
+    margin: 1em auto;
+}
+
+.View>.Page>.Primary>.Bottom p {
+    font-size: 1.25em;
+}
+
+.View>.Page>.Secondary>.Content {
+    background: #fffdf5;
+    border-top: 0.0625rem solid rgba(0,0,0,0.1);
+    color: #444440;
+    padding: 2.5vh 2.5vw;
+    text-align: center;
+}
+
+.View>.Page>.Secondary>.Footer {
+    background: #444440;
+    border-top: 0.0125rem solid rgba(0,0,0,0.1);
+    color: #fffdf5;
+    padding: 5vh 5vw;
+    text-align: center;
+}
+
+/* INFO Content styles */
+
+.Content>:first-child,
+.Content .Text>:first-child,
+.Content .Group>*>:first-child {
+    margin-top: 0;
+}
+
+.Content>:last-child,
+.Content .Text>:last-child,
+.Content .Group>*>:last-child {
+    margin-bottom: 0;
+}
+
+.Content>.Text,
+.Content .Group>* {
+    padding: 2.5vh 2.5%;
+}
+
+.Content .Text {
+    max-width: 45em;
+    min-width: 20em;
+    margin: 0 auto;
+    /* FIX Handle min-width properly */
+    -webkit-flex: 1 1 15em;
+    flex: 1 1 15em;
+}
+
+.Content .Text.Summary {
+    max-width: 50em;
+    text-align: center;
+}
+
+.Content .Text.Summary ul,
+.Content .Text.Summary p {
+    font-size: 1.25em;
+}
+
+/* INFO Responsiveness */
+
+@media screen and (max-width: 640px) {
+    .View>.Page>.Primary>.Top {
+        display: block;
+        text-align: center;
+    }
+
+    .View>.Page>.Primary>.Top nav {
+        margin-top: 1em;
+        text-align: center;
+    }
+    
+    .View>.Page>.Primary>.Top .Social {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 480px), screen and (max-height: 480px) {
+    .Stage>video {
+        display: none;
+    }
+}

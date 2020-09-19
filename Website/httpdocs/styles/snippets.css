@@ -1,0 +1,56 @@
+/* INFO Header */
+
+#HeaderSnippet {
+    background: url('../../assets/photos/header_mountain.jpg') no-repeat center center; 
+    background-size: cover;
+}
+
+#HeaderSnippet>.Bottom {
+    -webkit-transform: translateY(4vh);
+    transform: translateY(4vh);
+}
+
+/* INFO Footer */
+
+#FooterSnippet .Attributions {
+    margin-top: 1em;
+    font-size: 0.875em;
+}
+#FooterSnippet .Contact {
+    font-size: 0.875em;
+    list-style: none;
+}
+
+#FooterSnippet .Contact li {
+    display: inline-block;
+    margin: 0 0.5em 0 0;
+}
+#FooterSnippet .Contact li:first-child,
+#FooterSnippet .Contact li:nth-child(3) {
+    margin: 0 3em 0 0;
+}
+
+#FooterSnippet .Contact .E:after {
+    content: "";
+}
+
+/* INFO Responsiveness */
+
+@media screen and (max-height: 640px) {
+    #HeaderSnippet>.Top {
+        margin-left: -4vw;
+        margin-right: -4vw;
+    }
+
+    #HeaderSnippet>.Top .Logo {
+        font-size: 3.9em;
+    }
+
+    #HeaderSnippet #KickstarterBadge {
+        padding: 0.5em;
+        bottom: 8vh;
+        top: auto;
+        right: 4vw;
+        transform: rotate(-10deg);
+    }
+}

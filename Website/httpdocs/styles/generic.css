@@ -1,0 +1,490 @@
+/* INFO Fonts */
+
+@font-face {
+    font-family:'CallunaLight-Regular-Fontie';
+    src: url('/assets/fonts/CallunaLight-Regular_gdi.eot');
+    src: url('/assets/fonts/CallunaLight-Regular_gdi.eot?#iefix') format('embedded-opentype'),
+        url('/assets/fonts/CallunaLight-Regular_gdi.woff') format('woff'),
+        url('/assets/fonts/CallunaLight-Regular_gdi.ttf') format('truetype'),
+        url('/assets/fonts/CallunaLight-Regular_gdi.svg#CallunaLight-Regular') format('svg');
+    font-weight: 300;
+    font-style: normal;
+    font-stretch: normal;
+    unicode-range: U+0020-FB06;
+}
+
+@font-face {
+    font-family:'CallunaSansLight-Regular-Fontie';
+    src: url('/assets/fonts/CallunaSansLight-Regular_gdi.eot');
+    src: url('/assets/fonts/CallunaSansLight-Regular_gdi.eot?#iefix') format('embedded-opentype'),
+        url('/assets/fonts/CallunaSansLight-Regular_gdi.woff') format('woff'),
+        url('/assets/fonts/CallunaSansLight-Regular_gdi.ttf') format('truetype'),
+        url('/assets/fonts/CallunaSansLight-Regular_gdi.svg#CallunaSansLight-Regular') format('svg');
+    font-weight: 300;
+    font-style: normal;
+    font-stretch: normal;
+    unicode-range: U+0020-FB06;
+}
+
+@font-face {
+    font-family:'FlowyButtons-Regular-Fontie';
+    src: url('/assets/fonts/FlowyButtons_gdi.eot');
+    src: url('/assets/fonts/FlowyButtons_gdi.eot?#iefix') format('embedded-opentype'),
+        url('/assets/fonts/FlowyButtons_gdi.woff') format('woff'),
+        url('/assets/fonts/FlowyButtons_gdi.ttf') format('truetype'),
+        url('/assets/fonts/FlowyButtons_gdi.svg#FlowyButtons-Regular') format('svg');
+    font-weight: 400;
+    font-style: normal;
+    font-stretch: normal;
+    unicode-range: U+0041-0062;
+}
+
+/* INFO FlowyButton shortcuts */
+
+.FlowyButton:before,
+.FlowyButton:after {
+    display: inline-block;
+    font-family: 'FlowyButtons-Regular-Fontie';
+    font-style: normal;
+    font-weight: normal;
+}
+.FlowyButton.button_address:after { content:'\0041'; }
+.FlowyButton.button_bird:after { content:'\0042'; }
+.FlowyButton.button_cross:after { content:'\0043'; }
+.FlowyButton.button_entrance:after { content:'\0044'; }
+.FlowyButton.button_exit:after { content:'\0045'; }
+.FlowyButton.button_f:after { content:'\0046'; }
+.FlowyButton.button_googleplus:after { content:'\0047'; }
+.FlowyButton.button_home:after { content:'\0048'; }
+.FlowyButton.button_left:after { content:'\0049'; }
+.FlowyButton.button_mail:after { content:'\004A'; }
+.FlowyButton.button_menu:after { content:'\004B'; }
+.FlowyButton.button_note:after { content:'\004C'; }
+.FlowyButton.button_octocat:after { content:'\004D'; }
+.FlowyButton.button_plus:after { content:'\004E'; }
+.FlowyButton.button_right_red:after { content:'\004F'; }
+.FlowyButton.button_right:after { content:'\0050'; }
+.FlowyButton.button_start:after { content:'\0051'; }
+.FlowyButton.button_throbber:after { content:'\0052'; }
+.FlowyButton.button_trash:after { content:'\0053'; }
+.FlowyButton.button_up:after { content:'\0054'; }
+.FlowyButton.button_user:after { content:'\0055'; }
+.FlowyButton.logo_flowyapps:before { content:'\0056'; }
+.FlowyButton.logo_flowynotes:before { content:'\0057'; }
+.FlowyButton.logo_flowytasks:before { content:'\0058'; }
+.FlowyButton.logo_fontie:before { content:'\0059'; }
+.FlowyButton.logo_movember:before { content:'\005A'; }
+.FlowyButton.logo_reds:before { content:'\0061'; }
+.FlowyButton.logo_webapp:before { content:'\0062'; }
+
+.FlowyButton .Hint {
+    position: absolute;
+    left: -10000px;
+}
+
+/* INFO Animations */
+
+@-moz-keyframes Spin { 
+    from { -moz-transform:rotate(0deg); }
+    to { -moz-transform:rotate(360deg); }
+}
+@-webkit-keyframes Spin { 
+    from { -webkit-transform:rotate(0deg); }
+    to { -webkit-transform:rotate(360deg); }
+}
+@keyframes Spin { 
+    from { transform:rotate(0deg); }
+    to { transform:rotate(360deg); }
+}
+
+@-moz-keyframes NotificationFade { 
+    0% { opacity:0; }
+    5% { opacity:1; }
+    100% { opacity:0; }
+}
+@-webkit-keyframes NotificationFade { 
+    0% { opacity:0; }
+    5% { opacity:1; }
+    100% { opacity:0; }
+}
+@keyframes NotificationFade { 
+    0% { opacity:0; }
+    5% { opacity:1; }
+    100% { opacity:0; }
+}
+
+/* INFO Reset */
+
+*, :before, :after {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+    margin: 0;
+    padding: 0;
+    outline: none;
+    text-decoration: inherit;
+    -moz-osx-font-smoothing: inherit;
+    -webkit-font-smoothing: inherit;
+    /* NOTE Prevent space below elements (e.g. img) */
+    vertical-align: bottom;
+}
+
+/* NOTE Remove extra space inside buttons in Firefox */
+::-moz-focus-inner {
+    border: none;
+    padding: 0;
+}
+
+/* NOTE Disable coloured glow around invalid input elements */
+:invalid {
+  box-shadow: none;
+}
+:-moz-ui-invalid {
+  box-shadow: none;
+}
+:-moz-submit-invalid {
+  box-shadow: none;
+}
+
+/* INFO Block elements */
+
+body {
+    background: #444440;
+    color: #fffdf5;
+    font-family: "CallunaSansLight-Regular-Fontie", sans-serif;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+h1,h2,h3,h4,h5,h6  {
+    font-family: "CallunaLight-Regular-Fontie", serif;
+}
+h1 { font-size: 4em; }
+h2 { font-size: 3.5em; }
+h3 { font-size: 2em; }
+h4 { font-size: 1.5em; }
+h5 { font-size: 1.25em; }
+h6 { font-size: 1.125em; }
+
+/* INFO Inline elements */
+
+a {
+    -webkit-transition: color 500ms ease;
+    transition: color 500ms ease;
+}
+a:hover {
+    color: #f16b53;
+}
+a:not([href]) {
+    display: block;
+    width: 0;
+    height: 0;
+}
+
+a.Button {
+    display: inline-block;
+    background: #fffdf5;
+    color: inherit;
+    -webkit-transition: background 500ms ease;
+    transition: background 500ms ease;
+}
+a.Button:hover {
+    background: #f16b53;
+}
+
+button, button:after {
+    cursor: pointer;
+    -webkit-transition: color 500ms ease;
+    transition: color 500ms ease;
+}
+button:disabled, button:disabled:after {
+    color: inherit;
+    cursor: auto;
+}
+button:hover, button:hover:after {
+    color: #f16b53;
+}
+
+button.FlowyButton:after {
+    /* NOTE Reduces sloppy anti-aliasing during animation in Firefox */
+    padding: 2px;
+    margin: -2px;
+}
+button.FlowyButton:disabled:after {
+    content:'\0052' !important;
+    -moz-animation: Spin 3s linear infinite;
+    -ms-animation: Spin 3s linear infinite;
+    -webkit-animation: Spin 3s linear infinite;
+    animation: Spin 3s linear infinite;
+}
+
+input[type=text],
+input[type=password],
+input[type=email] {
+    background: rgba(0,0,0,0.1);
+    border: 0.0625rem solid #fffdf5;
+    border-radius: 0.25rem;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 0 0.25em;
+    line-height: 1.5em;
+    outline: none;
+    height: 1.75em;
+}
+
+input::-moz-placeholder {
+    color: inherit;
+    opacity: 0.8;
+    font-style: italic;
+}
+input:focus::-moz-placeholder {
+    opacity: 0.4;
+}
+input:-ms-input-placeholder {  
+    color: inherit;
+    opacity: 0.8;
+    font-style: italic;
+}
+input:focus:-ms-input-placeholder {
+    opacity: 0.4;
+}
+input::-webkit-input-placeholder {
+    color: inherit;
+    opacity: 0.8;
+    font-style: italic;
+}
+input:focus::-webkit-input-placeholder {
+    opacity: 0.4;
+}
+input::placeholder {
+    color: inherit;
+    opacity: 0.8;
+    font-style: italic;
+}
+input:focus::placeholder {
+    opacity: 0.4;
+}
+
+/* INFO Notifications */
+
+.Notification {
+    opacity: 0;
+}
+.Notification.error,
+.Notification.success,
+.Notification.info {
+    -moz-animation: NotificationFade 10s ease-in;
+    -ms-animation: NotificationFade 10s ease-in;
+    -webkit-animation: NotificationFade 10s ease-in;
+    animation: NotificationFade 10s ease-in;
+}
+.Notification.error { background: #f69b8a; }
+.Notification.success { background: #7fb438; }
+.Notification.info { background: #74c2dd; }
+
+/* INFO Logo */
+
+.Logo {
+    display: table;
+    text-align: right;
+    position: relative;
+}
+
+.Logo>* {
+    white-space: nowrap;
+} 
+
+.Logo span,
+.Logo.side span {
+    display: block;
+    font: 1em "CallunaLight-Regular-Fontie", serif !important;
+    /* NOTE left: 1.125em (image width) + 0.25em (space) */
+    margin: -0.25em 0px 0px 1.375em !important;
+}
+.Logo.below span {
+    margin: 0 !important;
+}
+
+.Logo span sup,
+.Logo.side span sup {
+    font-size: 0.25em;
+    position: absolute;
+    top: -0.6em;
+    bottom: auto;
+    right: 0;
+}
+.Logo.below span sup {
+    top: auto;
+    bottom: 3.75em;;
+}
+
+.Logo span a {
+    color: inherit !important;
+}
+
+.Logo span:before,
+.Logo.side span:before {
+    position: absolute;
+    font-size: 1.125em;
+    top: 0;
+    left: 0;
+}
+.Logo.below span:before {
+    display: block;
+    margin: 0 auto 0.06333em auto;
+    position: static;
+    font-size: 2.625em;
+    text-align: center;
+}
+
+.Logo small,
+.Logo.wide small {
+    display: block;
+    font: 0.25em "CallunaSansLight-Regular-Fontie", sans-serif !important;
+    margin-top: 0.03333em; /* NOTE -0.3em (remove line-spacing) + 0.33333em (space) */
+    text-align: right !important;
+}
+.Logo.compact small {
+    margin-top: -0.63333em; /* NOTE -0.3em (remove line-spacing) - 0.33333em (remove space) */
+}
+
+/* INFO Frames */
+
+.Frame,
+.Code,
+.Button {
+    display: block;
+    background: #fff;
+    border-radius: 0.1825rem;
+    box-sizing: border-box;
+    padding: 0.5rem;
+}
+
+.Code {
+    border: 0.0625rem solid rgba(0, 0, 0, 0.25);
+    font-family: monospace;
+    overflow: auto;
+    text-align: left;
+}
+
+.Button {
+    border-radius: 1em;
+    padding: 0.5em 1em;
+}
+
+/* INFO Anti-spam contact */
+
+.Contact .S:after {
+    content: "Grünhof 7"
+}
+
+.Contact .C:after {
+    content: "24867 Dannewerk"
+}
+
+.Contact .T:before {
+    content: "+49 176 "
+}
+
+.Contact .E:after {
+    content: "@letorbi.com"
+}
+
+/* INFO Texts */
+
+.Text {
+    text-align: justify;
+    line-height: 1.5;
+}
+
+.Text h1, .Text h2, .Text h3, .Text h4, .Text h5, .Text h6 {
+    margin: 1em auto 0.5em auto;
+}
+
+.Text p, .Text dl, .Text ol, .Text ul {
+    margin: 0.5em auto;
+}
+
+.Text li {
+    margin: 0.25em auto 0.25em 2em;
+}
+
+.Text a[href] {
+    color: #f16b53;
+}
+
+.Text em {
+    font-style: italic;
+}
+
+.Text small {
+    font-size: 0.75em;
+}
+
+.Text .Header {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 0 1em 1em 1em;
+} 
+
+.Text .Media {
+    text-align: center;
+    margin: 1.5em 0;
+}
+
+.Text .Media img {
+    border-radius: 0.1825rem;
+}
+
+.Text .Title {
+    text-align: center;
+}
+
+.Text .Title a {
+    color: inherit;
+}
+
+.Text .Title img {
+    display: block;
+    width: auto;
+    height: 4em;
+    margin: 0 auto 0.5em auto;
+}
+
+.Text .Title small {
+    font: 0.5em "CallunaSansLight-Regular-Fontie", sans-serif;
+    display: block;
+}
+
+/* INFO Responsiveness */
+
+@media screen and (min-width: 1600px) {
+    body {
+        font-size: 1.125em;
+    }
+}
+
+@media screen and (min-width: 1800px) {
+    body {
+        font-size: 1.25em;
+    }
+}
+
+@media screen and (max-height: 640px), screen and (max-width: 600px) {
+    body {
+        font-size: 0.875em;
+    }
+}
+
+@media screen and (max-height: 400px), screen and (max-width: 400px) {
+    body {
+        font-size: 0.75em;
+    }
+}

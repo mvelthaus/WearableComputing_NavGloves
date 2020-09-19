@@ -1,0 +1,39 @@
+#Story #AwardsSection ul {
+    margin-top: -1em;
+    text-align: center;
+}
+
+#Story #AwardsSection li {
+    display: inline-block;
+    list-style: none;
+    margin: 2em 2.5vw 0 2.5vw;
+}
+
+#Story #AwardsSection img {
+    height: auto;
+    max-height: 2.75em;
+    width: auto;
+    max-width: 85vw;
+}
+
+#Story #AwardsSection a {
+    color: inherit;
+}
+
+#Story #TeamSection .Group .Text {
+    -webkit-flex: 1 1 15em;
+    flex: 1 1 15em;
+    min-width: 15em;
+    max-width: 20em;
+}
+
+#Story #TeamSection img {
+    border-radius: 50%;
+    width: 6em;
+    height: 6em;
+}
+
+#Story #StorySection img {
+    width: 35em;
+    max-width: 100%;
+}

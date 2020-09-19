@@ -1,0 +1,10 @@
+{
+	"browser" : true,
+	"devel" : true,
+	"globalstrict": true,
+	"validthis": true,
+	"globals": {
+		"require": false,
+		"exports": true
+	}
+}

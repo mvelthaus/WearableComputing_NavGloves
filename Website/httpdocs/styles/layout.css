@@ -1,0 +1,161 @@
+html, body, #Viewport {
+    height: 100%;
+    margin: 0;
+}
+
+.View {
+    display: -webkit-flex;
+    -webkit-flex-direction: column;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.View>.Panel {
+    -webkit-flex: 0 1 auto;
+    flex: 0 1 auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 19em;
+    height: 100%;
+    overflow: auto;
+    z-index: 1;
+    transition: left 1s, width 1s;
+}
+
+.View>.Panel footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 19em;
+    transition: left 1s, width 1s;
+}
+
+.View>.Page {
+    display: -webkit-flex;
+    -webkit-flex-direction: column;
+    -webkit-flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+    position: relative;
+    transition: border-left 1s;
+    /* NOTE Fix soft wrap in IE */
+    width: 100%;
+}
+.View>.Panel+.Page {
+    box-sizing: border-box;
+    border-left: 19em solid transparent;
+}
+
+/* NOTE Height calculation fails, if content is bigger than viewport height */
+.View>.Page>.Stage {
+    -webkit-flex: 0 1 auto;
+    flex: 0 1 auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    transition: left 1s;
+}
+
+.View>.Page>.Primary {
+    display: -webkit-flex;
+    -webkit-flex: 1 0 auto;
+    display: flex;
+    flex: 1 0 auto;
+    position: relative;
+    -webkit-flex-direction: column;
+    -webkit-justify-content: space-between;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.View>.Page>.Secondary {
+    -webkit-flex: 0 1 auto;
+    flex: 0 1 auto;
+    height: 0;
+}
+
+/* INFO Content styles */
+
+.Content .Group {
+    display: -webkit-flex;
+    -webkit-flex-wrap: wrap;
+    -webkit-align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin: 0 auto;
+    max-width: 55em;
+}
+.Content .Group.centered {
+    -webkit-align-items: center;
+    -webkit-justify-content: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.Content .Group>* {
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+}
+.Content .Group.centered>* {
+    -webkit-flex: 0 1 auto;
+    flex: 0 1 auto;
+    /* FIX Wrong positioning in IE */ 
+    margin: 0;
+}
+.Content .Group.even>* {
+    -webkit-flex: 1 1 1em;
+    flex: 1 1 1em;
+    /* FIX Wrong positioning in IE */ 
+    margin: 0;
+    min-width: 0;
+    max-width: none;
+}
+
+.Content .Group>aside {
+    -webkit-flex: 0 1 auto;
+    -webkit-align-self: center;
+    flex: 0 1 auto;
+    align-self: center;
+    max-width: 33%;
+}
+
+.Content .Group>aside>img {
+  max-width: 100%;
+}
+
+/* INFO Responsiveness */
+
+@media screen and (max-width: 1200px) {
+    .View>.Panel,
+    .View>.Panel footer {
+        width: 19rem;
+    }
+
+    .View>.Panel+.Page {
+        border-left: 19rem solid transparent;
+    }
+}
+
+@media screen and (max-width: 640px) {
+    .View>.Panel,
+    .View>.Panel footer {
+        left: -18rem;
+        overflow: hidden;
+    }
+    .View>.Panel:hover,
+    .View>.Panel:hover footer {
+        left: 0;
+        overflow: auto;
+    }
+
+    .View>.Panel+.Page {
+        border-left: 1rem solid transparent;
+    }
+}

@@ -1,0 +1,5 @@
+#Contact #EmailSection li,
+#Contact #SocialSection li {
+    display: inline-block;
+    list-style: none;
+}
