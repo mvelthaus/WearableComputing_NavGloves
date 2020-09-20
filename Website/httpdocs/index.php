@@ -16,7 +16,7 @@
 
     // NOTE Protocol and hostname for Open Graph URLs.
     $og_url = 'https://'.preg_replace('/^(?:www|en|de)\./', '', $_SERVER['SERVER_NAME']).$_SERVER['REQUEST_URI'];
-    $og_image = 'https://'.preg_replace('/^(?:www|en|de)\./', '', $_SERVER['SERVER_NAME'])."/opengraph/default.png";
+    $og_image = 'https://'.preg_replace('/^(?:www|en|de)\./', '', $_SERVER['SERVER_NAME'])."/assets/opengraph/default.png";
 ?>
 
 <!DOCTYPE html>
