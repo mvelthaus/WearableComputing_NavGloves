@@ -1,6 +1,6 @@
 <footer id="FooterSnippet" class="Footer">
     <ul class="Contact">
-        <li>Copyright ©  2020 T.Haase, M.Velthaus, M.Ahmadi, M.Hermann</li>
+        <li>Copyright ©  2020 T.Haase, M.Velthaus, M.Amidi, M.Hermannsen</li>
         <li><a href="/details#imprint">Imprint</a></li>
     </ul>
     <div class="Attributions">
