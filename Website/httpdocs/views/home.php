@@ -6,14 +6,17 @@
             <section class="Content">
                 <div class="Text"> 
                   <h3>Don't become distracted</h3>
-                  <p>A text that describes the problems when navigating with map, compass, gps or smartphone.</p>
-                  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed lacinia nibh quis turpis congue, sit amet commodo metus dictum. Quisque eu eros auctor, consectetur elit ut, malesuada lacus. Aliquam erat volutpat. Nulla suscipit sem diam, sed vehicula odio aliquet vel.</p>
+                  <p>Imagine a beautiful outdoor trip, where the experience of nature and the surrounding area or wilderness is the matter of your trip. Regardless of your favorite outdoor activity - let it be hiking, cycling, sailing or fulfill the dream of flying - all these activities are usually performed by navigation services.</p>
+                  <p>Conventional navigation services guide you to the desired target with the help of a map, compass, GPS device or smartphone-app. The course navigation is carried out by visual or acoustical announcements, which lead to an undesired distraction and decreases the experience for a fantastic adventure. Even the usage of a vintage map requires manual handling, so your eyes and hands are blocked and the risk of accidents increases, as well as the ability for orientation reduces.</p>
+                  <p>To avoid distraction, we introduce NavGloves, a progressive navigation device that lets you focus on the real experience.</p>
                 </div>
             </section>
             <section class="Content">
               <div class="Text">
                 <h3>How it works</h3>
-                <p>A short text that describes how the gloves work. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed lacinia nibh quis turpis congue, sit amet commodo metus dictum. Quisque eu eros auctor, consectetur elit ut, malesuada lacus. Aliquam erat volutpat. Nulla suscipit sem diam, sed vehicula odio aliquet vel. Morbi a magna erat. Nam interdum sem quam, sit amet rutrum ante rhoncus a. Sed dapibus scelerisque gravida. Sed ut metus nec justo sollicitudin pharetra eget et tellus.</p>
+                <p>NavGloves give you the freedom and ease back to your outdoor activities. Vibration motors attached on lightweight cloth gloves indicates course instructions directly to you. You define the desired target at the beginning of the trip with the initial usage of our smartphone-app. That's the only one smartphone-action needed, during your trip the navigation instructruction are signalled through the NavGloves to you, wireless!</p>
+                <p>Every glove has four vibro-tactile motors placed on the finger knuckles to indicate different course corrections directly to the user. Depending on the necessary course correction in degrees, more or less vibration motors signalise intuitive feedback to the user. If the target is reached, all motors will vibrate to signalise the arrival.</p>
+                <p>The main advantage of NavGloves is the distraction-free navigation process, primarily for all activities, where hands-free navigation is important or desired. Especially in environments, where visual or acoustical announcements are disruptive, the NavGloves show its true strength.</p>
               </div>
             </section>
             <a id="intro"></a>
