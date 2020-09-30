@@ -14,7 +14,7 @@
             <section class="Content">
               <div class="Text">
                 <h3>How it works</h3>
-                <p>NavGloves give you the freedom and ease back to your outdoor activities. Vibration motors attached on lightweight cloth gloves indicates course instructions directly to you. You define the desired target at the beginning of the trip with the initial usage of our smartphone-app. That's the only one smartphone-action needed, during your trip the navigation instructruction are signalled through the NavGloves to you, wireless!</p>
+                <p>NavGloves give you the freedom and ease back to your outdoor activities. Vibration motors attached on lightweight cloth gloves indicate course instructions directly to you. You define the desired target at the beginning of the trip with the initial usage of our smartphone-app. That's the only one smartphone-action needed, during your trip the navigation instructructions are signalled through the NavGloves to you, wireless!</p>
                 <p>Every glove has four vibro-tactile motors placed on the finger knuckles to indicate different course corrections directly to the user. Depending on the necessary course correction in degrees, more or less vibration motors signalise intuitive feedback to the user. If the target is reached, all motors will vibrate to signalise the arrival.</p>
                 <p>The main advantage of NavGloves is the distraction-free navigation process, primarily for all activities, where hands-free navigation is important or desired. Especially in environments, where visual or acoustical announcements are disruptive, the NavGloves show its true strength.</p>
               </div>
@@ -26,7 +26,7 @@
               <div class="Group even">
                 <div class="Text">
                   <img class="Header" src="assets/icons/hiking.svg">
-                  <p>Explore the wilderness and stay on course without distraction</p>
+                  <p>Explore the wilderness and stay on course without distraction.</p>
                 </div>
                 <div class="Text">
                   <img class="Header" src="assets/icons/sailboat.svg">
