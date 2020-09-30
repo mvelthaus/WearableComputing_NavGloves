@@ -26,19 +26,19 @@
               <div class="Group even">
                 <div class="Text">
                   <img class="Header" src="assets/icons/hiking.svg">
-                  <p>One sentence about hiking.</p>
+                  <p>Explore the wilderness and stay on course without distraction</p>
                 </div>
                 <div class="Text">
                   <img class="Header" src="assets/icons/sailboat.svg">
-                  <p>One sentence about watersports.</p>
+                  <p>Focus on your watercraft, no need for interaction with navigation devices.</p>
                 </div>
                 <div class="Text">
                   <img class="Header" src="assets/icons/parachute.svg">
-                  <p>One sentence about flying.</p>
+                  <p>Let your dreams come true, seamless navigation for maximum freedom.</p>
                 </div>
                 <div class="Text">
                   <img class="Header" src="assets/icons/sos.svg">
-                  <p>One sentence about search & rescue.</p>
+                  <p>Get precise course navigation in difficult terrain to help people in need.</p>
                 </div>
               </div>
             </section>
